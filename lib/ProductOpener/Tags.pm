@@ -36,6 +36,7 @@ BEGIN
 					&has_tag
 					&add_tag
 					&remove_tag
+					&is_a
 	
 					%canon_tags
 					%tags_images
@@ -126,9 +127,13 @@ use GraphViz2;
 use JSON::PP;
 
 
+binmode STDERR, ":encoding(UTF-8)";
 
 
-%tags_fields = (packaging => 1, brands => 1, categories => 1, labels => 1, origins => 1, manufacturing_places => 1, emb_codes => 1, allergens => 1, traces => 1, purchase_places => 1, stores => 1, countries => 1, states=>1, codes=>1, debug => 1);
+
+%tags_fields = (packaging => 1, brands => 1, categories => 1, labels => 1, origins => 1, manufacturing_places => 1, emb_codes => 1,
+ allergens => 1, traces => 1, purchase_places => 1, stores => 1, countries => 1, states=>1, codes=>1, debug => 1,
+ environment_impact_level=>1);
 %hierarchy_fields = ();
 
 %taxonomy_fields = (); # populated by retrieve_tags_taxonomy
@@ -147,6 +152,16 @@ conservation_conditions => 1,
 other_information => 1,
 recycling_instructions_to_recycle => 1,
 recycling_instructions_to_discard => 1,
+producer => 1,
+origin => 1,
+preparation => 1,
+warning => 1,
+recipe_idea => 1,
+customer_service => 1,
+product_infocard => 1,
+ingredients_infocard => 1,
+nutrition_infocard => 1,
+environment_infocard => 1,
 );
 
 
@@ -199,6 +214,37 @@ sub has_tag($$$) {
 		}
 	}
 	return $return;
+}
+
+# Determine if a tag is a child of another tag (ot the same tag)
+# assume tags are already canonicalized
+sub is_a($$$) {
+	
+	my $tagtype = shift;
+	my $child = shift;
+	my $parent = shift;
+	
+	#$log->debug("is_a", { tagtype => $tagtype, child => $child, parent => $parent }) if $log->is_debug();
+
+	my $found = 0;
+	
+	if ($child eq $parent) {
+		$found = 1;
+	}
+	elsif ((defined $all_parents{$tagtype})	and (defined $all_parents{$tagtype}{$child})) {
+		
+		#$log->debug("is_a - parents found") if $log->is_debug();
+	
+		foreach my $tagid (@{$all_parents{$tagtype}{$child}}) {
+			#$log->debug("is_a - comparing parents", {tagid => $tagid}) if $log->is_debug();
+			if ($tagid eq $parent) {
+				$found = 1;
+				last;
+			}
+		}
+	}
+
+	return $found;
 }
 
 
@@ -301,7 +347,7 @@ sub load_tags_hierarchy($$) {
 # > Nectars d'abricot, nectar d'abricot, nectars d'abricots, nectar 
 
 			if ($line !~ /^(>|<)/) {
-				my @tags = split(/,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				$current_tag = shift @tags;
 				$current_tagid = get_fileid($current_tag);
 				$canon_tags{$lc}{$tagtype}{$current_tagid} = $current_tag;
@@ -316,7 +362,7 @@ sub load_tags_hierarchy($$) {
 			}
 			elsif ($line =~ /^>( )?/) {
 				$line = $';
-				my @tags = split(/,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				my $child = shift(@tags);
 				# print "line : $line\nchild: $child\n";
 				my $childid = get_fileid($child);
@@ -336,7 +382,7 @@ sub load_tags_hierarchy($$) {
 			}
 			elsif ($line =~ /^<( )?/) {
 				$line = $';
-				my @tags = split(/,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				my $parent = shift(@tags);
 				# print "line : $line\nparent: $parent\n";				
 				my $parentid = get_fileid($parent);
@@ -645,7 +691,7 @@ sub build_tags_taxonomy($$) {
 				$line = $';
 				$line =~ s/^\s+//;
 				print "taxonomy - stopwords - tagtype: $tagtype - lc: $lc - $lc.orig: " . $stopwords{$tagtype}{$lc . ".orig"} . "\n";
-				my @tags = split(/( )?,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				foreach my $tag (@tags) {
 					my $tagid = get_fileid($tag);
 					next if $tagid eq '';
@@ -665,7 +711,7 @@ sub build_tags_taxonomy($$) {
 					die ("Empty entry at line $line_number in $data_root/taxonomies/$tagtype.txt\n");
 				}
 				
-				my @tags = split(/( )?,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				
 				$current_tag = $tags[0];
 				$current_tag = ucfirst($current_tag);
@@ -675,13 +721,13 @@ sub build_tags_taxonomy($$) {
 				# this is useful for taxonomies that need to be merged, and that are concatenated
 				
 				# should only be applied to ingredients (and not to additives)
-				
+
 				if ($tagtype eq 'ingredients') {
 				
 					foreach my $tag2 (@tags) {
 
 						my $tag = $tag2;
-					
+
 						$tag =~ s/^\s+//;
 						$tag = normalize_percentages($tag, $lc);
 						my $tagid = get_fileid($tag);
@@ -720,14 +766,14 @@ sub build_tags_taxonomy($$) {
 
 				if (not defined $translations_from{$tagtype}{"$lc:$current_tagid"}) {
 					$translations_from{$tagtype}{"$lc:$current_tagid"} = $canon_tagid;
-					print "taxonomy - translation_from{$tagtype}{$lc:$current_tagid} = $canon_tagid \n";
+					print STDERR "taxonomy - translation_from{$tagtype}{$lc:$current_tagid} = $canon_tagid \n";
 				}
 				
 				defined $translations_to{$tagtype}{$canon_tagid} or $translations_to{$tagtype}{$canon_tagid} = {};
 				
 				if (not defined $translations_to{$tagtype}{$canon_tagid}{$lc}) {
 					$translations_to{$tagtype}{$canon_tagid}{$lc} = $current_tag;
-					print "taxonomy - translations_to{$tagtype}{$canon_tagid}{$lc} = $current_tag \n";
+					print STDERR "taxonomy - translations_to{$tagtype}{$canon_tagid}{$lc} = $current_tag \n";
 				}
 								
 				
@@ -751,7 +797,7 @@ sub build_tags_taxonomy($$) {
 							
 					push @{$synonyms_for{$tagtype}{$lc}{$current_tagid}}, $tag;
 					$synonyms{$tagtype}{$lc}{$tagid} = $current_tagid;
-					print "taxonomy - synonyms - synonyms{$tagtype}{$lc}{$tagid} = $current_tagid \n";
+					print STDERR "taxonomy - synonyms - synonyms{$tagtype}{$lc}{$tagid} = $current_tagid \n";
 				}					
 				
 			}
@@ -778,7 +824,7 @@ sub build_tags_taxonomy($$) {
 		foreach my $lc (sort keys %{$synonyms_for{$tagtype}}) {
 			$synonym_contains_synonyms{$lc} = {};
 			foreach my $current_tagid (sort keys %{$synonyms_for{$tagtype}{$lc}}) {
-				print "synonyms_for{$tagtype}{$lc} - $current_tagid - " . scalar(@{$synonyms_for{$tagtype}{$lc}{$current_tagid}}) . "\n";
+				print STDERR "synonyms_for{$tagtype}{$lc} - $current_tagid - " . scalar(@{$synonyms_for{$tagtype}{$lc}{$current_tagid}}) . "\n";
 				
 				(defined $synonyms_for_extended{$tagtype}{$lc}) or $synonyms_for_extended{$tagtype}{$lc} = {};
 				
@@ -786,7 +832,7 @@ sub build_tags_taxonomy($$) {
 					my $tagid = get_fileid($tag);
 					(defined $synonyms_for_extended{$tagtype}{$lc}{$current_tagid}) or $synonyms_for_extended{$tagtype}{$lc}{$current_tagid} = {};
 					$synonyms_for_extended{$tagtype}{$lc}{$current_tagid}{$tagid} = 1;
-					print "synonyms_for_extended{$tagtype}{$lc}{$current_tagid}{$tagid} = 1 \n";
+					print STDERR "synonyms_for_extended{$tagtype}{$lc}{$current_tagid}{$tagid} = 1 \n";
 				}
 			}
 		}
@@ -798,7 +844,7 @@ sub build_tags_taxonomy($$) {
 		
 		for (my $pass = 1; $pass <= $max_pass; $pass++) {
 		
-		print "computing synonyms - $tagtype - pass $pass\n";
+		print STDERR "computing synonyms - $tagtype - pass $pass\n";
 		
 		foreach my $lc ( sort keys %{$synonyms{$tagtype}}) {
 		
@@ -897,7 +943,7 @@ sub build_tags_taxonomy($$) {
 									$synonym_contains_synonyms{$lc}{$tagid_new} = {};
 								}
 								$synonym_contains_synonyms{$lc}{$tagid_new}{$tagid2_c} = 1;
-								print "synonyms_extended : synonyms{$tagtype}{$lc}{$tagid_new} = $tagid_c (tagid: $tagid - tagid2: $tagid2 - tagid2_c: $tagid2_c - tagid2_s: $tagid2_s - replace: $replace - replaceby: $replaceby)\n";
+								print STDERR "synonyms_extended : synonyms{$tagtype}{$lc}{$tagid_new} = $tagid_c (tagid: $tagid - tagid2: $tagid2 - tagid2_c: $tagid2_c - tagid2_s: $tagid2_s - replace: $replace - replaceby: $replaceby)\n";
 							}
 						}
 					}				
@@ -925,7 +971,7 @@ sub build_tags_taxonomy($$) {
 				
 				if (not defined $synonyms{$tagtype}{$lc}{$tagid2}) {
 					$synonyms{$tagtype}{$lc}{$tagid2} = $synonyms{$tagtype}{$lc}{$tagid};
-					print "taxonomy - more synonyms - tagid2: $tagid2 - tagid: $tagid\n";
+					print STDERR "taxonomy - more synonyms - tagid2: $tagid2 - tagid: $tagid\n";
 				}	
 				
 			}
@@ -986,7 +1032,7 @@ sub build_tags_taxonomy($$) {
 			if ($line =~ /^(\s*)$/) {
 				$canon_tagid = undef;
 				%parents = ();
-				print "taxonomy: next tag\n";
+				print STDERR "taxonomy: next tag\n";
 				next;
 			}
 			
@@ -1005,18 +1051,18 @@ sub build_tags_taxonomy($$) {
 					$stopped_parentid = remove_stopwords($tagtype,$lc,$parentid);
 					$stopped_parentid = remove_plurals($lc,$stopped_parentid);
 					$canon_parentid = $synonyms{$tagtype}{$lc}{$stopped_parentid};
-					print "taxonomy : did not find parentid $parentid, trying stopped_parentid $stopped_parentid - result canon_parentid: $canon_parentid\n";
+					print STDERR "taxonomy : did not find parentid $parentid, trying stopped_parentid $stopped_parentid - result canon_parentid: $canon_parentid\n";
 				}
 				my $main_parentid = $translations_from{$tagtype}{"$lc:" . $canon_parentid};
 				$parents{$main_parentid}++;
 				# display a warning if the same parent is specified twice?
-				print "taxonomy: tagtype: $tagtype - lc: $lc - parent: $parent - parentid: $parentid - canon_parentid: $canon_parentid - main_parentid: $main_parentid\n";
+				print STDERR "taxonomy: tagtype: $tagtype - lc: $lc - parent: $parent - parentid: $parentid - canon_parentid: $canon_parentid - main_parentid: $main_parentid\n";
 			}
 			elsif ($line =~ /^(\w\w):/) {
 				my $lc = $1;
 				$line = $';
 				$line =~ s/^\s+//;
-				my @tags = split(/( )?,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				$current_tag = normalize_percentages($tags[0], $lc);
 				$current_tagid = get_fileid($current_tag);
 				
@@ -1049,7 +1095,7 @@ sub build_tags_taxonomy($$) {
 						}
 						if ((not defined $canon_tagid) and (defined $possible_canon_tagid)) {
 							$canon_tagid = "$lc:" . $possible_canon_tagid;
-							print "taxonomy - we already have a canon_tagid $canon_tagid for the tag $tag\n";
+							print STDERR "taxonomy - we already have a canon_tagid $canon_tagid for the tag $tag\n";
 							last;
 						}
 					}	
@@ -1065,7 +1111,7 @@ sub build_tags_taxonomy($$) {
 						$direct_parents{$tagtype}{$canon_tagid}{$parentid} = 1;
 						defined $direct_children{$tagtype}{$parentid} or $direct_children{$tagtype}{$parentid} = {};
 						$direct_children{$tagtype}{$parentid}{$canon_tagid} = 1;
-						print "taxonomy: $parentid > $canon_tagid\n";
+						print STDERR "taxonomy: $parentid > $canon_tagid\n";
 					}
 				}
 			}			
@@ -1077,7 +1123,7 @@ sub build_tags_taxonomy($$) {
 				next if $property eq 'synonyms';
 				next if $property eq 'stopwords';
 				
-				print "taxonomy - property - tagtype: $tagtype - lc: $lc - property: $property\n";
+				print STDERR "taxonomy - property - tagtype: $tagtype - lc: $lc - property: $property\n";
 				defined $properties{$tagtype}{$canon_tagid} or $properties{$tagtype}{$canon_tagid} = {};
 				$properties{$tagtype}{$canon_tagid}{"$property:$lc"} = $line;
 			}
@@ -1144,7 +1190,7 @@ sub build_tags_taxonomy($$) {
 				my $lc = $1;
 				$line = $';
 				$line =~ s/^\s+//;
-				my @tags = split(/( )?,( )?/, $line);
+				my @tags = split(/\s*,\s*/, $line);
 				$current_tag = normalize_percentages($tags[0], $lc);
 				$current_tagid = get_fileid($current_tag);
 				
@@ -1161,7 +1207,7 @@ sub build_tags_taxonomy($$) {
 				next if $property eq 'synonyms';
 				next if $property eq 'stopwords';
 				
-				print "taxonomy - property - tagtype: $tagtype - canon_tagid: $canon_tagid - lc: $lc - property: $property\n";
+				print STDERR "taxonomy - property - tagtype: $tagtype - canon_tagid: $canon_tagid - lc: $lc - property: $property\n";
 				defined $properties{$tagtype}{$canon_tagid} or $properties{$tagtype}{$canon_tagid} = {};
 				$properties{$tagtype}{$canon_tagid}{"$property:$lc"} = $line;
 			}
@@ -1234,7 +1280,8 @@ sub build_tags_taxonomy($$) {
 			}
 			if (defined $all_parents{$tagtype}{$tagid}) {
 				# sort parents according to level
-				@{$all_parents{$tagtype}{$tagid}} = sort ( {$level{$tagtype}{$a} <=> $level{$tagtype}{$b} } @{$all_parents{$tagtype}{$tagid}} );
+				@{$all_parents{$tagtype}{$tagid}} = sort  { (((defined $level{$tagtype}{$b}) ? $level{$tagtype}{$b} : 0) <=> ((defined $level{$tagtype}{$a}) ? $level{$tagtype}{$a} : 0)) || ($a cmp $b) }  
+					@{$all_parents{$tagtype}{$tagid}} ;
 				$key .= '> ' . join((' > ', reverse @{$all_parents{$tagtype}{$tagid}})) . ' ';
 			}
 			$key .= '> ' . $tagid;
@@ -1722,6 +1769,8 @@ sub gen_ingredients_tags_hierarchy_taxonomy($$) {
 
 	# for ingredients, we should keep the order
 	# question: what do do with parents?
+	# put the parents after the ingredient
+	# do not put parents that have already been added after another ingredient
 
 	my $tag_lc = shift;
 	my $tagtype = "ingredients";
@@ -1733,6 +1782,7 @@ sub gen_ingredients_tags_hierarchy_taxonomy($$) {
 	}
 	
 	my @tags = ();
+	my %seen = ();
 	
 	foreach my $tag2 (split(/(\s*),(\s*)/, $tags_list)) {
 		my $tag = $tag2;
@@ -1749,7 +1799,11 @@ sub gen_ingredients_tags_hierarchy_taxonomy($$) {
 			#print STDERR "taxonomy - empty tag: $tag - l: $l - tagid: $tagid - tag_lc: >$tags_list< \n";
 			next;
 		}
-		push @tags, $tag;
+		
+		if (not exists $seen{$tag}) {
+			push @tags, $tag;
+			$seen{$tag} = 1;
+		}
 		
 		if (defined $all_parents{$tagtype}{$tagid}) {
 			foreach my $parentid (@{$all_parents{$tagtype}{$tagid}}) {
@@ -1757,7 +1811,10 @@ sub gen_ingredients_tags_hierarchy_taxonomy($$) {
 					$log->info("empty parent id for taxonmy", { parentid => $parentid, tagid => $tagid, tag_lc => $tags_list }) if $log->is_info();
 					next;
 				}			
-				push @tags, $parentid;
+				if (not exists $seen{$parentid}) {
+					push @tags, $parentid;
+					$seen{$parentid} = 1;
+				}				
 			}
 		}
 	}
@@ -2207,20 +2264,12 @@ sub canonicalize_tag2($$)
 	
 		$tag = uc($tag);
 		
-		if (1) {
-			$tag = normalize_packager_codes($tag);
-			if ($lc =~ /fr|es|it|pt/) {
-				$tag =~ s/EC$/CE/;
-			}
-			elsif ($lc =~ /de|nl/) {
-				$tag =~ s/EC$/EG/;
-			}
+		$tag = normalize_packager_codes($tag);
+		if ($lc =~ /fr|es|it|pt/) {
+			$tag =~ s/EC$/CE/;
 		}
-		else {
-			# old, FR only
-		$tag =~ s/([A-Z])-/$1 /g;
-		$tag =~ s/-([A-Z])/ $1/g;
-		$tag =~ s/(\d)-(\d)/$1.$2/g;
+		elsif ($lc =~ /de|nl/) {
+			$tag =~ s/EC$/EG/;
 		}
 	}
 	
@@ -2650,11 +2699,11 @@ sub canonicalize_tag_link($$)
 	}
 	
 	# Redirect photographers, informers, correctors, checkers to users page
-	if (($tagtype eq 'photographers') or ($tagtype eq 'informers')
-		or ($tagtype eq 'correctors') or ($tagtype eq 'checkers')) {
-		
-		$tagtype = 'users';
-	}
+	#if (($tagtype eq 'photographers') or ($tagtype eq 'informers')
+	#	or ($tagtype eq 'correctors') or ($tagtype eq 'checkers')) {
+	#	
+	#	$tagtype = 'users';
+	#}
 		
 		
 	my $path = $tag_type_singular{$tagtype}{$lang};
@@ -2980,8 +3029,10 @@ sub add_tags_to_field($$$$) {
 	my $current_field = $product_ref->{$field};
 
 	my %existing = ();
-	foreach my $tagid (@{$product_ref->{$field . "_tags"}}) {
-		$existing{$tagid} = 1;
+	if (defined $product_ref->{$field . "_tags"}) {
+		foreach my $tagid (@{$product_ref->{$field . "_tags"}}) {
+			$existing{$tagid} = 1;
+		}
 	}
 	
 	my @added_tags = ();
@@ -3000,19 +3051,28 @@ sub add_tags_to_field($$$$) {
 			$tagid = get_fileid($tag);
 		}
 		if (not exists $existing{$tagid}) {
-			print STDERR "product_jqm_multilingual.pl - adding $tagid to $field: $product_ref->{$field}\n";
+			my $current_value = "current: does not exist";
+			(defined $product_ref->{$field}) and $current_value = "current: " . $product_ref->{$field};
+			print STDERR "add_tags_to_field - adding $tagid to $field: $current_value\n";
 			push @added_tags, $tag;
-			$product_ref->{$field} .= ", $tag";
 		}
 		
 	}
 	
-	if (scalar @added_tags > 0) {
-		# we do not know the language of the current value of $product_ref->{$field}
-		# so regenerate it in the current language used by the interface / caller
-		my $value = display_tags_hierarchy_taxonomy($tag_lc, $field, $product_ref->{$field . "_hierarchy"});
-		# Remove tags
-		$value =~ s/<(([^>]|\n)*)>//g;
+	if ((scalar @added_tags) > 0) {
+	
+		my $value = "";
+	
+		if (defined $taxonomy_fields{$field}) {
+			# we do not know the language of the current value of $product_ref->{$field}
+			# so regenerate it in the current language used by the interface / caller
+			$value = display_tags_hierarchy_taxonomy($tag_lc, $field, $product_ref->{$field . "_hierarchy"});
+			# Remove tags
+			$value =~ s/<(([^>]|\n)*)>//g;
+		}
+		else {
+			$value = $product_ref->{$field};
+		}
 		
 		$product_ref->{$field} = $value . ", " . join(", ", @added_tags);
 	}
@@ -3146,6 +3206,10 @@ sub compute_field_tags($$$) {
 	else {
 		delete $product_ref->{$field . "_next_hierarchy" };
 		delete $product_ref->{$field . "_next_tags" };
+	}
+	
+	if (not defined $product_ref->{$field . "_debug_tags"}[0]) {
+		delete $product_ref->{$field . "_debug_tags"};
 	}
 	
 }

@@ -48,7 +48,7 @@ use CGI qw/:cgi :form escapeHTML/;
 use URI::Escape::XS;
 use Storable qw/dclone/;
 use Encode;
-use JSON;
+use JSON::PP;
 use Time::Local;
 use XML::Rules;
 
@@ -644,7 +644,7 @@ BOO_JOE_ROB => "Joël Robuchon"
 						}
 						if ($current_field ne $product_ref->{$field}) {
 							print "changed value for product code: $code - field: $field = $product_ref->{$field} - old: $current_field \n";
-							compute_field_tags($product_ref, $field);
+							compute_field_tags($product_ref, "fr", $field);
 							push @modified_fields, $field;
 							$modified++;
 						}

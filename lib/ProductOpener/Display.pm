@@ -70,12 +70,6 @@ BEGIN
 					$memd
 					$default_request_ref
 
-					$connection
-					$database
-					$products_collection
-					$emb_codes_collection
-					$recent_changes_collection
-
 					$scripts
 					$initjs
 					$styles
@@ -84,6 +78,7 @@ BEGIN
 
 					$original_subdomain
 					$subdomain
+					$formatted_subdomain
 					$test
 					$lc
 					$cc
@@ -112,6 +107,7 @@ use ProductOpener::Products qw/:all/;
 use ProductOpener::Missions qw/:all/;
 use ProductOpener::MissionsConfig qw/:all/;
 use ProductOpener::URL qw/:all/;
+use ProductOpener::Data qw/:all/;
 
 use Cache::Memcached::Fast;
 use Text::Unaccent;
@@ -165,21 +161,6 @@ $memd = new Cache::Memcached::Fast {
 	'servers' => $memd_servers,
 	'utf8' => 1,
 };
-
-$connection = MongoDB->connect($mongodb_host);
-$database = $connection->get_database($mongodb);
-$products_collection = $database->get_collection('products');
-$emb_codes_collection = $database->get_collection('emb_codes');
-$recent_changes_collection = $database->get_collection('recent_changes');
-
-if (defined $options{other_servers}) {
-
-	foreach my $server (keys %{$options{other_servers}}) {
-		$options{other_servers}{$server}{database} = $connection->get_database($options{other_servers}{$server}{mongodb});
-		$options{other_servers}{$server}{products_collection} = $options{other_servers}{$server}{database}->get_collection('products');
-	}
-}
-
 
 $default_request_ref = {
 page=>1,
@@ -388,6 +369,9 @@ CSS
 CSS
 ;
 	}
+	
+	# call format_subdomain($subdomain) only once
+	$formatted_subdomain = format_subdomain($subdomain);
 }
 
 # component was specified as en:product, fr:produit etc.
@@ -517,7 +501,7 @@ sub analyze_request($)
 	}
 	# Renamed text?
 	elsif ((defined $options{redirect_texts}) and (defined $options{redirect_texts}{$lang . "/" . $components[0]})) {
-		$request_ref->{redirect} = format_subdomain($subdomain) . "/" . $options{redirect_texts}{$lang . "/" . $components[0]};
+		$request_ref->{redirect} = $formatted_subdomain . "/" . $options{redirect_texts}{$lang . "/" . $components[0]};
 		$log->info("renamed text, redirecting", { textid => $components[0], redirect => $request_ref->{redirect} }) if $log->is_info();
 		return 301;
 	}
@@ -530,7 +514,7 @@ sub analyze_request($)
 	elsif (_component_is_singular_tag_in_specific_lc($components[0], 'products')) {
 		# check the product code looks like a number
 		if ($components[1] =~ /^\d/) {
-			$request_ref->{redirect} = format_subdomain($subdomain) . '/' . $tag_type_singular{products}{$lc} . '/' . $components[1];;
+			$request_ref->{redirect} = $formatted_subdomain . '/' . $tag_type_singular{products}{$lc} . '/' . $components[1];;
 		}
 		else {
 			display_error(lang("error_invalid_address"), 404);
@@ -1158,7 +1142,7 @@ sub display_list_of_tags($$) {
 	my $groupby_tagtype = $request_ref->{groupby_tagtype};
 
 	# Add a meta robot noindex for pages related to users
-	if ((defined $groupby_tagtype) and ($groupby_tagtype =~ /^(users|editors|informers|correctors|photographers|checkers)$/)) {
+	if ((defined $groupby_tagtype) and ($groupby_tagtype =~ /^(users|correctors|editors|informers|correctors|photographers|checkers)$/)) {
 
 		$header .= '<meta name="robots" content="noindex">' . "\n";
 
@@ -1254,7 +1238,9 @@ sub display_list_of_tags($$) {
 	$log->debug("MongoDB hashed aggregate query key", { key => $key }) if $log->is_debug();
 
 	# disable caching if ?nocache=1
-	if ((defined $request_ref->{nocache}) and ($request_ref->{nocache})) {
+	# or if the user is logged in and nocache is different from 0
+	if ( ((defined $request_ref->{nocache}) and ($request_ref->{nocache}))
+		or ((defined $User_id) and not ((defined $request_ref->{nocache}) and ($request_ref->{nocache} == 0)))   ) {
 
 		$log->debug("MongoDB nocache parameter, skip caching", { key => $key }) if $log->is_debug();
 
@@ -1270,34 +1256,37 @@ sub display_list_of_tags($$) {
 
 		$log->debug("Did not find a value for aggregate MongoDB query key", { key => $key }) if $log->is_debug();
 
-
-		eval {
-			$log->debug("Executing MongoDB aggregate query", { query => $aggregate_parameters }) if $log->is_debug();
-			$results = $products_collection->aggregate( $aggregate_parameters );
-		};
-		if ($@) {
-			$log->warn("MongoDB error - retrying once", { error => $@ }) if $log->is_warn();
-			# maybe $connection auto-reconnects but $database and $products_collection still reference the old connection?
-
-			# opening new connection
+		# do not used the smaller cached products_ tags collection if ?nocache=1
+		# or if the user is logged in and nocache is different from 0
+		if ( ((defined $request_ref->{nocache}) and ($request_ref->{nocache}))
+			or ((defined $User_id) and not ((defined $request_ref->{nocache}) and ($request_ref->{nocache} == 0)))   ) {
+			
 			eval {
-				$connection = MongoDB->connect($mongodb_host);
-				$database = $connection->get_database($mongodb);
-				$products_collection = $database->get_collection('products');
-			};
-			if ($@) {
-				$log->error("MongoDB error - reconnecting failed", { error => $@ }) if $log->is_error();
-				$count = -1;
-			}
-			else {
-				$log->info("MongoDB reconnect ok", { error => $@ }) if $log->is_info();
-				eval {
-					$log->debug("Executing MongoDB aggregate query", { query => $aggregate_parameters }) if $log->is_debug();
-					$results = $products_collection->aggregate( $aggregate_parameters);
-				};
-				$log->debug("MongoDB query done", { error => $@ }) if $log->is_debug();
-			}
+				$log->debug("Executing MongoDB aggregate query on products collection", { query => $aggregate_parameters }) if $log->is_debug();
+				$results = execute_query(sub {
+					return get_products_collection()->aggregate( $aggregate_parameters, { allowDiskUse => 1 } );
+				});
+			};			
+			
 		}
+		else {
+		
+			eval {
+				$log->debug("Executing MongoDB aggregate query on products_tags collection", { query => $aggregate_parameters }) if $log->is_debug();
+				$results = execute_query(sub {
+					return get_products_tags_collection()->aggregate( $aggregate_parameters, { allowDiskUse => 1 } );
+				});
+			};
+		}
+		if ($@) {
+			$log->warn("MongoDB error", { error => $@ }) if $log->is_warn();
+			$count = -1;
+		}
+		else {
+			$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
+		}
+
+		$log->debug("MongoDB query done", { error => $@ }) if $log->is_debug();
 
 		$log->trace("aggregate query done") if $log->is_trace();
 
@@ -1330,9 +1319,9 @@ sub display_list_of_tags($$) {
 	my $html = '';
 	my $html_pages = '';
 
-	my $countries_map_links = '';
-	my $countries_map_names = '';
-	my $countries_map_data = '';
+	my $countries_map_links = {};
+	my $countries_map_names = {};
+	my $countries_map_data = {};
 
 	if ((not defined $results) or (ref($results) ne "ARRAY") or (not defined $results->[0])) {
 
@@ -1434,9 +1423,19 @@ sub display_list_of_tags($$) {
 		}
 
 		my %products = ();	# number of products by tag, used for histogram of nutrition grades colors
+		
+		$log->debug("going through all tags", {}) if $log->is_debug();
+		
+		my $i = 0;
 
 		foreach my $tagcount_ref (@tags) {
-
+	
+			$i++;
+			
+			if (($i % 10000 == 0) and ($log->is_debug())) {
+				$log->debug("going through all tags", {i => $i});
+			}
+		
 			my $tagid = $tagcount_ref->{_id};
 			my $count = $tagcount_ref->{count};
 
@@ -1532,7 +1531,7 @@ sub display_list_of_tags($$) {
 			my $display = '';
 			my @sameAs = ();
 			if ($tagtype eq 'nutrition_grades') {
-				if ($tagid =~ /^a|b|c|d|e$/) {
+				if ($tagid =~ /^[abcde]$/) {
 					my $grade = $tagid;
 					$display = "<img src=\"/images/misc/nutriscore-$grade.svg\" alt=\"$Lang{nutrition_grade_fr_alt}{$lc} " . uc($grade) . "\" style=\"margin-bottom:1rem;max-width:100%\">" ;
 				}
@@ -1570,7 +1569,7 @@ sub display_list_of_tags($$) {
 			my $tagentry = {
 				id => $tagid,
 				name => $display,
-				url => format_subdomain($subdomain) . $product_link,
+				url => $formatted_subdomain . $product_link,
 				products => $products + 0, # + 0 to make the value numeric
 			};
 
@@ -1603,12 +1602,22 @@ sub display_list_of_tags($$) {
 					if ($region eq 'UK') {
 						$region = 'GB';
 					}
-					$countries_map_links .=  '"' . $region . '": "' . $product_link . "\",\n";
-					$countries_map_data .= '"' . $region . '": ' . $products . ",\n";
 
-					my $name = $display;
-					$name =~ s/<(.*?)>//g;
-					$countries_map_names .= '"' . $region . '": "' . $name . "\",\n";
+					# In case there are multiple country names and thus links that map to the region
+					# only keep the first one, which has the biggest count (and is likely to be the correct name)
+					if (not defined $countries_map_links->{$region}) {
+						$countries_map_links->{$region} = $product_link;
+						my $name = $display;
+						$name =~ s/<(.*?)>//g;
+						$countries_map_names->{$region} = $name;
+					}
+
+					if (not defined $countries_map_data->{$region}) {
+						$countries_map_data->{$region} = $products;
+					}
+					else {
+						$countries_map_data->{$region} = $countries_map_data->{$region} + $products;
+					}
 				}
 			}
 
@@ -1617,6 +1626,8 @@ sub display_list_of_tags($$) {
 
 		$html .= "</tbody></table></div>";
 
+		$log->debug("going through all tags - done", {}) if $log->is_debug();
+		
 
 		# nutrition grades colors histogram
 
@@ -1647,7 +1658,7 @@ sub display_list_of_tags($$) {
                 text: '$request_ref->{title}'
             },
             subtitle: {
-                text: '$Lang{data_source}{$lc}$sep: @{[ format_subdomain($subdomain) ]}'
+                text: '$Lang{data_source}{$lc}$sep: $formatted_subdomain'
             },
             xAxis: {
                 title: {
@@ -1716,23 +1727,11 @@ HTML
 
 
 		# countries map?
-		if ($countries_map_data ne '') {
-
-			$countries_map_data =~ s/,\n?$//s;
-			$initjs .= <<JS
-var countries_map_data = {
-$countries_map_data
-};
-
-var countries_map_links = {
-$countries_map_links
-};
-
-var countries_map_names = {
-$countries_map_names
-};
-
-
+		if (keys %{$countries_map_data} > 0) {
+			$initjs .= 'var countries_map_data=' . encode_json($countries_map_data) . ';'
+				    .= 'var countries_map_links=' . encode_json($countries_map_links) . ';'
+					.= 'var countries_map_names=' . encode_json($countries_map_names) . ';'
+					.= <<JS
 \$('#world-map').vectorMap({
   map: 'world_mill_en',
   series: {
@@ -1752,7 +1751,7 @@ $countries_map_names
   },
   onRegionClick: function(e, code, region){
 	if (countries_map_links[code]) {
-		window.location.href = "@{[ format_subdomain($subdomain) ]}" + countries_map_links[code];
+		window.location.href = "$formatted_subdomain" + countries_map_links[code];
 	}
   },
 });
@@ -1822,6 +1821,9 @@ HEADER
 
 	# datatables clears both
 	$request_ref->{full_width} = 1;
+	
+	$log->debug("end", {}) if $log->is_debug();
+
 
 	return $html;
 }
@@ -2102,8 +2104,8 @@ sub display_tag($) {
 	local $log->context->{tagid2} = $tagid2;
 
 	# Add a meta robot noindex for pages related to users
-	if ( ((defined $tagtype) and ($tagtype =~ /^(users|editors|informers|correctors|photographers|checkers)$/))
-		or ((defined $tagtype2) and ($tagtype2 =~ /^(users|editors|informers|correctors|photographers|checkers)$/)) ) {
+	if ( ((defined $tagtype) and ($tagtype =~ /^(users|correctors|editors|informers|correctors|photographers|checkers)$/))
+		or ((defined $tagtype2) and ($tagtype2 =~ /^(users|correctors|editors|informers|correctors|photographers|checkers)$/)) ) {
 
 		$header .= '<meta name="robots" content="noindex">' . "\n";
 
@@ -2857,40 +2859,62 @@ HTML
 		$initjs .= $js;
 	}
 
-	if ($tagtype eq 'users') {
+
+
+	if ($tagtype =~ /^(users|correctors|editors|informers|correctors|photographers|checkers)$/) {
+
 		my $user_ref = retrieve("$data_root/users/$tagid.sto");
 
-		if ($admin) {
-			$description .= "<p>" . $user_ref->{email} . "</p>";
-		}
-
 		if (defined $user_ref) {
+
 			if ((defined $user_ref->{name}) and ($user_ref->{name} ne '')) {
 				$title = $user_ref->{name} . " ($tagid)";
 				$products_title = $user_ref->{name};
 			}
 
-			$description .= "<p>" . lang("contributor_since") . " " . display_date_tag($user_ref->{registered_t}) . "</p>";
+			if ($tagtype =~ /^(correctors|editors|informers|correctors|photographers|checkers)$/) {
+				$description .= "\n<ul><li><a href=\"" . canonicalize_tag_link("users", get_fileid($tagid)) . "\">" . sprintf(lang('user_s_page'), $products_title) . "</a></li></ul>\n"
 
-			if ((defined $user_ref->{missions}) and ($request_ref->{page} <= 1 )) {
-				my $missions = '';
-				my $i = 0;
+			}
 
-				foreach my $missionid (sort { $user_ref->{missions}{$b} <=> $user_ref->{missions}{$a}} keys %{$user_ref->{missions}}) {
-					$missions .= "<li style=\"margin-bottom:10px;clear:left;\"><img src=\"/images/misc/gold-star-32.png\" alt=\"Star\" style=\"float:left;margin-top:-5px;margin-right:20px;\"> <div>"
-					. "<a href=\"" . canonicalize_tag_link("missions", $missionid) . "\" style=\"font-size:1.4em\">"
-					. $Missions{$missionid}{name} . "</a></div></li>\n";
-					$i++;
+			else {
+
+				if ($admin) {
+					$description .= "<p>" . $user_ref->{email} . "</p>";
 				}
 
-				if ($i > 0) {
-					$missions = "<h2>" . lang("missions") . "</h2>\n<p>"
-					. $products_title . ' ' . sprintf(lang("completed_n_missions"), $i) . "</p>\n"
-					. '<ul id="missions" style="list-style-type:none">' . "\n" . $missions . "</ul>";
-					$missions =~ s/ 1 missions/ 1 mission/;
+				$description .= "<p>" . lang("contributor_since") . " " . display_date_tag($user_ref->{registered_t}) . "</p>";
+
+				# Display links to products edited, photographed etc.
+
+				$description .= "\n<ul>\n"
+				. "<li><a href=\"" . canonicalize_tag_link("editors", get_fileid($tagid)) . "\">" . sprintf(lang('editors_products'), $products_title) . "</a></li>\n"
+				. "<li><a href=\"" . canonicalize_tag_link("photographers", get_fileid($tagid)) . "\">" . sprintf(lang('photographers_products'), $products_title) . "</a></li>\n"
+				. "</ul>\n";
+
+
+				# 2018/12/19 - disable displaying missions (broken since 2013)
+				if (0 and (defined $user_ref->{missions}) and ($request_ref->{page} <= 1 )) {
+					my $missions = '';
+					my $i = 0;
+
+					foreach my $missionid (sort { $user_ref->{missions}{$b} <=> $user_ref->{missions}{$a}} keys %{$user_ref->{missions}}) {
+						$missions .= "<li style=\"margin-bottom:10px;clear:left;\"><img src=\"/images/misc/gold-star-32.png\" alt=\"Star\" style=\"float:left;margin-top:-5px;margin-right:20px;\"> <div>"
+						. "<a href=\"" . canonicalize_tag_link("missions", $missionid) . "\" style=\"font-size:1.4em\">"
+						. $Missions{$missionid}{name} . "</a></div></li>\n";
+						$i++;
+					}
+
+					if ($i > 0) {
+						$missions = "<h2>" . lang("missions") . "</h2>\n<p>"
+						. $products_title . ' ' . sprintf(lang("completed_n_missions"), $i) . "</p>\n"
+						. '<ul id="missions" style="list-style-type:none">' . "\n" . $missions . "</ul>";
+						$missions =~ s/ 1 missions/ 1 mission/;
+					}
+
+					$description .= $missions;
 				}
 
-				$description .= $missions;
 			}
 		}
 	}
@@ -2998,8 +3022,10 @@ HTML
 	# db.myCol.find({ mylist: { $ne: 'orange' } })
 
 
-	# unknown ?
-	if (($tagid eq get_fileid(lang("unknown"))) or ($tagid eq ($lc . ":" . get_fileid(lang("unknown"))))) {
+	# unknown / empty value
+	# warning: unknown is a value for pnns_groups_1 and 2
+	if ((($tagid eq get_fileid(lang("unknown"))) or ($tagid eq ($lc . ":" . get_fileid(lang("unknown")))))
+		and ($tagtype !~ /^pnns_groups_/)) {
 		#$query_ref = { ($tagtype . "_tags") => "[]"};
 		$query_ref = { "\$or" => [ { ($tagtype ) => undef}, { $tagtype => ""} ] };
 	}
@@ -3026,6 +3052,11 @@ HTML
 			push @$and, { $field => $value };
 			delete $query_ref->{$field};
 			$query_ref->{"\$and"} = $and;
+		}
+		# unknown / empty value
+		elsif ((($tagid2 eq get_fileid(lang("unknown"))) or ($tagid2 eq ($lc . ":" . get_fileid(lang("unknown")))))
+			and ($tagtype2 !~ /^pnns_groups_/)) {
+			$query_ref->{"\$or"} = [ { ($tagtype2 ) => undef}, { $tagtype2 => ""} ] ;
 		}
 		else {
 			$query_ref->{$field} = $value;
@@ -3170,7 +3201,9 @@ sub search_and_display_products($$$$$) {
 	$log->debug("MongoDB hashed query key", { key => $key }) if $log->is_debug();
 
 	# disable caching if ?nocache=1
-	if ((defined $request_ref->{nocache}) and ($request_ref->{nocache})) {
+	# or if the user is logged in and nocache is different from 0
+	if ( ((defined $request_ref->{nocache}) and ($request_ref->{nocache}))
+		or ((defined $User_id) and not ((defined $request_ref->{nocache}) and ($request_ref->{nocache} == 0)))   ) {
 
 		$log->debug("MongoDB nocache parameter, skip caching", { key => $key }) if $log->is_debug();
 
@@ -3200,66 +3233,40 @@ sub search_and_display_products($$$$$) {
 					{ "\$sample" => { "size" => $request_ref->{sample_size} } }
 				];
 				$log->debug("Executing MongoDB query", { query => $aggregate_parameters }) if $log->is_debug();
-				$cursor = $products_collection->aggregate($aggregate_parameters);
+				$cursor = execute_query(sub {
+					return get_products_tags_collection()->aggregate($aggregate_parameters, { allowDiskUse => 1 });
+				});
 			}
 			else {
-				$log->debug("Executing MongoDB query", { query => $mongodb_query_ref }) if $log->is_debug();
-				$cursor = $products_collection->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
+				$log->debug("Executing MongoDB query", { query => $query_ref, sort => $sort_ref, limit => $limit, skip => $skip }) if $log->is_debug();
+				$cursor = execute_query(sub {
+					return get_products_collection()->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
+				});
 				$count = $cursor->count() + 0;
 				$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 			}
 		};
 		if ($@) {
-			$log->warn("MongoDB error - retrying once", { error => $@ }) if $log->is_warn();
-			# maybe $connection auto-reconnects but $database and $products_collection still reference the old connection?
+			$log->warn("MongoDB error", { error => $@ }) if $log->is_warn();
+		}
+		else
+		{
+			$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 
-			# opening new connection
-			eval {
-				$connection = MongoDB->connect($mongodb_host);
-				$database = $connection->get_database($mongodb);
-				$products_collection = $database->get_collection('products');
-			};
-			if ($@) {
-				$log->error("MongoDB error - reconnecting failed", { error => $@ }) if $log->is_error();
-				$count = -1;
+			while (my $product_ref = $cursor->next) {
+				push @{$request_ref->{structured_response}{products}}, $product_ref;
 			}
-			else {
-				$log->info("MongoDB reconnect ok", { error => $@ }) if $log->is_info();
-				if (($options{mongodb_supports_sample}) and (defined $request_ref->{sample_size})) {
-					my $aggregate_parameters = [
-						{ "\$match" => $query_ref },
-						{ "\$sample" => { "size" => $request_ref->{sample_size} } }
-					];
-					$log->debug("Executing MongoDB query", { query => $aggregate_parameters }) if $log->is_debug();
-					$cursor = $products_collection->aggregate($aggregate_parameters);
-				}
-				else {
-					$log->debug("Executing MongoDB query", { query => $query_ref, sort => $sort_ref, limit => $limit, skip => $skip }) if $log->is_debug();
-					$cursor = $products_collection->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
-					$count = $cursor->count() + 0;
-					$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
+			$request_ref->{structured_response}{count} = $count + 0;
 
-				}
-				$log->debug("MongoDB query done", { error => $@ }) if $log->is_debug();
-			}
+			$log->debug("Setting value for MongoDB query key", { key => $key }) if $log->is_debug();
+
+			$memd->set($key, $request_ref->{structured_response}, 3600) or $log->debug("Could not set value for MongoDB query key", { key => $key });
 		}
 
-		while (my $product_ref = $cursor->next) {
-			push @{$request_ref->{structured_response}{products}}, $product_ref;
-		}
-
-		$request_ref->{structured_response}{count} = $count + 0;
-
-		$log->debug("Setting value for MongoDB query key", { key => $key }) if $log->is_debug();
-
-		$memd->set($key, $request_ref->{structured_response}, 3600) or $log->debug("Could not set value for MongoDB query key", { key => $key });
-
-	}
-	else {
-		$log->debug("Found a value for MongoDB query key", { key => $key }) if $log->is_debug();
-	}
-
-
+  }
+  else {
+    $log->debug("Found a value for MongoDB query key", { key => $key }) if $log->is_debug();
+  }
 
 	$count = $request_ref->{structured_response}{count};
 
@@ -3369,7 +3376,7 @@ HTML
 			$product_name =~ s/(.*) (.*?)/$1\&nbsp;$2/;
 
 			my $url = product_url($product_ref);
-			$product_ref->{url} = format_subdomain($subdomain) . $url;
+			$product_ref->{url} = $formatted_subdomain . $url;
 
 			add_images_urls_to_product($product_ref);
 
@@ -3510,9 +3517,8 @@ HTML
 		if (defined $request_ref->{jqm}) {
 			if (defined $next_page_url) {
 				my $loadmore = lang("loadmore");
-				my $loadmore_domain = format_subdomain($subdomain);
 				$html .= <<HTML
-<li id="loadmore" style="text-align:center"><a href="${loadmore_domain}/${next_page_url}&jqm_loadmore=1" id="loadmorelink">$loadmore</a></li>
+<li id="loadmore" style="text-align:center"><a href="${formatted_subdomain}/${next_page_url}&jqm_loadmore=1" id="loadmorelink">$loadmore</a></li>
 HTML
 ;
 			}
@@ -3536,8 +3542,7 @@ HTML
 
 	if ($subdomain ne $original_subdomain) {
 		$log->debug("subdomain not equal to original_subdomain, converting relative paths to absolute paths", { subdomain => $subdomain, original_subdomain => $original_subdomain }) if $log->is_debug();
-		my $formated_subdomain = format_subdomain($subdomain);
-		$html =~ s/(href|src)=("\/)/$1="$formated_subdomain\//g;
+		$html =~ s/(href|src)=("\/)/$1="$formatted_subdomain\//g;
 	}
 
 	return $html;
@@ -3602,29 +3607,19 @@ sub search_and_export_products($$$$$) {
 	my $count;
 
 	eval {
-		$cursor = $products_collection->query($query_ref)->sort($sort_ref);
+		$cursor = execute_query(sub {
+			# disabling sort for CSV export, as we get memory errors
+			# MongoDB::DatabaseError: Runner error: Overflow sort stage buffered data usage of 33572508 bytes exceeds internal limit of 33554432 bytes
+			# return get_products_collection()->query($query_ref)->sort($sort_ref);
+			return get_products_collection()->query($query_ref);
+		});
 		$count = $cursor->count() + 0;
 	};
 	if ($@) {
-		$log->warn("MongoDB error - retrying once", { error => $@ }) if $log->is_warn();
-		# maybe $connection auto-reconnects but $database and $products_collection still reference the old connection?
-
-		# opening new connection
-		eval {
-			$connection = MongoDB->connect($mongodb_host);
-			$database = $connection->get_database($mongodb);
-			$products_collection = $database->get_collection('products');
-		};
-		if ($@) {
-			$log->error("MongoDB error - reconnecting failed", { error => $@ }) if $log->is_error();
-			$count = -1;
-		}
-		else {
-			$log->info("MongoDB reconnect ok", { error => $@ }) if $log->is_info();
-			$cursor = $products_collection->query($query_ref)->sort($sort_ref);
-			$count = $cursor->count() + 0;
-			$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
-		}
+		$log->warn("MongoDB error", { error => $@ }) if $log->is_warn();
+	}
+	else {
+		$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 	}
 
 	$request_ref->{count} = $count + 0;
@@ -3646,14 +3641,25 @@ sub search_and_export_products($$$$$) {
 
 	if ($count <= 0) {
 		# $request_ref->{content_html} = $html;
-		return $html;
+		$request_ref->{title} = lang("search_results");
+		display_new($request_ref);
+		return;
 	}
 
 
-	my $csv = '';
+	
 
 	if ($count > 0) {
-
+	
+		# Send the CSV file line by line
+		
+		use Apache2::RequestRec ();
+		my $r = Apache2::RequestUtil->request();
+		$r->headers_out->set("Content-type" => "text/csv; charset=UTF-8");
+		$r->headers_out->set("Content-disposition" => "attachment;filename=openfoodfacts_search.csv");
+		binmode(STDOUT, ":encoding(UTF-8)");
+		print "Content-Type: text/csv; charset=UTF-8\r\n\r\n";	
+	
 		my $categories_nutriments_ref = retrieve("$data_root/index/categories_nutriments_per_country.$cc.sto");
 
 		# First pass needed if we flatten results
@@ -3687,7 +3693,8 @@ sub search_and_export_products($$$$$) {
 
 		my %tags_fields = (packaging => 1, brands => 1, categories => 1, labels => 1, origins => 1, manufacturing_places => 1, emb_codes=>1, cities=>1, allergens => 1, traces => 1, additives => 1, ingredients_from_palm_oil => 1, ingredients_that_may_be_from_palm_oil => 1);
 
-
+		my $csv = "";
+		
 		foreach my $field (@export_fields) {
 
 			# skip additives field and put only additives_tags
@@ -3739,9 +3746,14 @@ sub search_and_export_products($$$$$) {
 
 		$csv =~ s/\t$/\n/;
 
-
+		print $csv;
+		
+		
+		
 		while (my $product_ref = $cursor->next) {
 
+			$csv = "";
+		
 			# Normal fields
 
 			foreach my $field (@export_fields) {
@@ -3784,7 +3796,9 @@ sub search_and_export_products($$$$$) {
 			and  (defined $product_ref->{categories_tags}) and (scalar @{$product_ref->{categories_tags}} > 0)) {
 
 				$main_cid = $product_ref->{categories_tags}[0];
-
+				if (not defined $main_cid) {
+					$main_cid = "";
+				}
 
 
 				foreach my $cid (@{$product_ref->{categories_tags}}) {
@@ -3868,11 +3882,13 @@ sub search_and_export_products($$$$$) {
 			}
 
 			$csv =~ s/\t$/\n/;
+			
+			print $csv;
 
 		}
 	}
 
-	return $csv;
+	return;
 }
 
 
@@ -3973,7 +3989,7 @@ sub display_scatter_plot($$$) {
 				and (((($graph_ref->{axis_y} eq 'additives_n') or ($graph_ref->{axis_y} eq 'ingredients_n')) and (defined $product_ref->{$graph_ref->{axis_y}})) or
 					(defined $product_ref->{nutriments}{$graph_ref->{axis_y} . "_100g"}) and ($product_ref->{nutriments}{$graph_ref->{axis_y} . "_100g"} ne ''))) {
 
-				my $url = format_subdomain($subdomain) . product_url($product_ref->{code});
+				my $url = $formatted_subdomain . product_url($product_ref->{code});
 
 				# Identify the series id
 				my $seriesid = 0;
@@ -4150,7 +4166,7 @@ JS
                 text: '$graph_ref->{graph_title}'
             },
             subtitle: {
-                text: '$Lang{data_source}{$lc}$sep: @{[ format_subdomain($subdomain) ]}'
+                text: '$Lang{data_source}{$lc}$sep: $formatted_subdomain'
             },
             xAxis: {
 				$x_allowDecimals
@@ -4501,7 +4517,7 @@ JS
                 text: '$graph_ref->{graph_title}'
             },
             subtitle: {
-                text: '$Lang{data_source}{$lc}$sep: @{[ format_subdomain($subdomain) ]}'
+                text: '$Lang{data_source}{$lc}$sep: $formatted_subdomain'
             },
             xAxis: {
                 title: {
@@ -4625,29 +4641,16 @@ sub search_and_graph_products($$$) {
 	}
 
 	eval {
-		$cursor = $products_collection->query($query_ref);
+		$cursor = execute_query(sub {
+			return get_products_collection()->query($query_ref);
+		});
 		$count = $cursor->count() + 0;
 	};
 	if ($@) {
-		$log->warn("MongoDB error - retrying once", { error => $@ }) if $log->is_warn();
-		# maybe $connection auto-reconnects but $database and $products_collection still reference the old connection?
-
-		# opening new connection
-		eval {
-			$connection = MongoDB->connect($mongodb_host);
-			$database = $connection->get_database($mongodb);
-			$products_collection = $database->get_collection('products');
-		};
-		if ($@) {
-			$log->error("MongoDB error - reconnecting failed", { error => $@ }) if $log->is_error();
-			$count = -1;
-		}
-		else {
-			$log->info("MongoDB reconnect ok", { error => $@ }) if $log->is_info();
-			$cursor = $products_collection->query($query_ref);
-			$count = $cursor->count() + 0;
-			$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
-		}
+		$log->warn("MongoDB error", { error => $@ }) if $log->is_warn();
+	}
+	else {
+		$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 	}
 
 	$log->info("retrieved products from MongoDB to display them in a graph", { count => $count }) if $log->is_info();
@@ -4779,29 +4782,16 @@ sub search_and_map_products($$$) {
 	$log->info("retrieving products from MongoDB to display them in a map", { count => $count }) if $log->is_info();
 
 	eval {
-		$cursor = $products_collection->query($query_ref);
+		$cursor = execute_query(sub {
+			return get_products_collection()->query($query_ref);
+		});
 		$count = $cursor->count() + 0;
 	};
 	if ($@) {
-		$log->warn("MongoDB error - retrying once", { error => $@ }) if $log->is_warn();
-		# maybe $connection auto-reconnects but $database and $products_collection still reference the old connection?
-
-		# opening new connection
-		eval {
-			$connection = MongoDB->connect($mongodb_host);
-			$database = $connection->get_database($mongodb);
-			$products_collection = $database->get_collection('products');
-		};
-		if ($@) {
-			$log->error("MongoDB error - reconnecting failed", { error => $@ }) if $log->is_error();
-			$count = -1;
-		}
-		else {
-			$log->info("MongoDB reconnect ok", { error => $@ }) if $log->is_info();
-			$cursor = $products_collection->query($query_ref);
-			$count = $cursor->count() + 0;
-			$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
-		}
+		$log->warn("MongoDB error", { error => $@ }) if $log->is_warn();
+	}
+	else {
+		$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 	}
 
 	$log->info("retrieved products from MongoDB to display them in a map", { count => $count }) if $log->is_info();
@@ -5074,7 +5064,7 @@ sub display_my_block($)
 	if (defined $User_id) {
 
 		my $links = '<ul class="side-nav" style="padding-top:0">';
-		$links .= "<li><a href=\"" . canonicalize_tag_link("users", get_fileid($User_id)) . "\">" . lang("products_you_edited") . "</a></li>";
+		$links .= "<li><a href=\"" . canonicalize_tag_link("editors", get_fileid($User_id)) . "\">" . lang("products_you_edited") . "</a></li>";
 		$links .= "<li><a href=\"" . canonicalize_tag_link("users", get_fileid($User_id)) . canonicalize_taxonomy_tag_link($lc,"states", "en:to-be-completed") . "\">" . lang("incomplete_products_you_added") . "</a></li>";
 		$links .= "</ul>";
 
@@ -5287,7 +5277,7 @@ sub display_new($) {
 		$canon_description = lang("site_description");
 	}
 	my $canon_image_url = "";
-	my $canon_url = format_subdomain($subdomain);
+	my $canon_url = $formatted_subdomain;
 
 	if (defined $request_ref->{canon_url}) {
 		if ($request_ref->{canon_url} =~ /^http:/) {
@@ -5359,7 +5349,8 @@ $options{favicons}
 <link rel="stylesheet" href="/css/dist/app.css?v=$file_timestamps{"css/dist/app.css"}">
 <link rel="stylesheet" href="@{[ format_subdomain('static') ]}/bower_components/jquery-ui/themes/base/jquery-ui.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" integrity="sha384-HIipfSYbpCkh5/1V87AWAeR5SUrNiewznrUrtNz1ux4uneLhsAKzv/0FnMbj3m6g" crossorigin="anonymous">
-<link rel="search" href="@{[ format_subdomain($subdomain) ]}/cgi/opensearch.pl" type="application/opensearchdescription+xml" title="$Lang{site_name}{$lang}">
+<link rel="search" href="$formatted_subdomain/cgi/opensearch.pl" type="application/opensearchdescription+xml" title="$Lang{site_name}{$lang}">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 <style media="all">
 HTML
 ;
@@ -5500,8 +5491,20 @@ Pour améliorer l'alimentation de tous, c'est le moment de <a href="https://www.
 HTML
 ;
 
+		$top_banner = <<HTML
+<div class="row full-width" style="max-width: 100% !important;" >
+
+<div class="small-12 columns" style="background-color:#effbff; text-align:center;padding:1em;">
+Une bonne résolution pour 2019 : <a href="https://www.lilo.org/fr/open-food-facts/?utm_source=open-food-facts">adoptez le moteur de recherche Lilo</a> pour soutenir Open Food Facts lors de chacune de vos recherches. Merci !
+<span style="color:red">❤</span>
+</div>
+</div>
+HTML
+;
+
+
 	}
-	if ($lc eq 'en') {
+	if ($lc eq 'en-deactivated') {
 
 		$top_banner = <<HTML
 <div class="row full-width" style="max-width: 100% !important;" >
@@ -5511,6 +5514,56 @@ To improve food for everyone, it's time to <a href="https://www.helloasso.com/as
 <span style="color:red">❤</span>
 </div>
 </div>
+HTML
+;
+	}
+
+	# Display a banner from users on Android or iOS
+
+	my $user_agent = $ENV{HTTP_USER_AGENT};
+
+	my $mobile;
+	my $system;
+
+	# windows phone must be first as its user agent includes the string android
+	if ($user_agent =~ /windows phone/i) {
+
+		$mobile = "windows";
+	}
+	elsif ($user_agent =~ /android/i) {
+
+		$mobile = "android";
+		$system = "android";
+	}
+	elsif ($user_agent =~ /iphone/i) {
+
+		$mobile = "iphone";
+		$system = "ios";
+	}
+	elsif ($user_agent =~ /ipad/i) {
+
+		$mobile = "ipad";
+		$system = "ios";
+	}
+
+	if ((defined $mobile) and (defined $Lang{"get_the_app_$mobile"})) {
+
+		my $link = lang($system . "_app_link");
+		my $link_text = lang("get_the_app_$mobile");
+
+		if ($system eq 'android') {
+
+			$link_text = '<i class="fab fa-android"></i> ' . $link_text;
+		}
+		elsif ($system eq 'ios') {
+
+			$link_text = '<i class="fab fa-apple"></i> ' . $link_text;
+		}
+
+		$top_banner = <<HTML
+
+<a href="$link" class="button expand">$link_text</a>
+
 HTML
 ;
 	}
@@ -5531,11 +5584,15 @@ HTML
 					</div>
 				</form>
 			</li>
-			<li class="show-for-large-up"><a href="/cgi/search.pl" title="$Lang{advanced_search}{$lang}"><i class="fi-plus"></i></a></li>
-			<li class="show-for-large-up"><a href="/cgi/search.pl?graph=1" title="$Lang{graphs_and_maps}{$lang}"><i class="fi-graph-bar"></i></a></li>
+			<li class="show-for-large-only"><a href="/cgi/search.pl" title="$Lang{advanced_search}{$lang}"><i class="fi-plus"></i></a></li>
+			<li class="show-for-xlarge-up"><a href="/cgi/search.pl"><i class="fi-plus"></i> $Lang{advanced_search}{$lang}</span></a></li>
+			<li class="show-for-large-only"><a href="/cgi/search.pl?graph=1" title="$Lang{graphs_and_maps}{$lang}"><i class="fi-graph-bar"></i></a></li>
+			<li class="show-for-xlarge-up"><a href="/cgi/search.pl?graph=1"><i class="fi-graph-bar"></i> $Lang{graphs_and_maps}{$lang}</span></a></li>
 			<li class="show-for-large-up divider"></li>
 			<li><a href="$Lang{menu_discover_link}{$lang}">$Lang{menu_discover}{$lang}</a></li>
 			<li><a href="$Lang{menu_contribute_link}{$lang}">$Lang{menu_contribute}{$lang}</a></li>
+			<li class="show-for-large"><a href="/$Lang{get_the_app_link}{$lc}" title="$Lang{get_the_app}{$lc}" class="button success"><i class="fas fa-mobile-alt"></i></a></li>
+			<li class="show-for-xlarge-up"><a href="/$Lang{get_the_app_link}{$lc}" class="button success"><i class="fas fa-mobile-alt"></i> $Lang{get_the_app}{$lc}</a></li>
 		</ul>
 	</section>
 </nav>
@@ -5741,17 +5798,17 @@ window.addEventListener('load', onLoad);
 	"\@context" : "https://schema.org",
 	"\@type" : "WebSite",
 	"name" : "$Lang{site_name}{$lc}",
-	"url" : "@{[ format_subdomain($subdomain) ]}",
+	"url" : "$formatted_subdomain",
 	"potentialAction": {
 		"\@type": "SearchAction",
-		"target": "@{[ format_subdomain($subdomain) ]}/cgi/search.pl?search_terms=?{search_term_string}",
+		"target": "$formatted_subdomain/cgi/search.pl?search_terms=?{search_term_string}",
 		"query-input": "required name=search_term_string"
 	}
 }
 {
 	"\@context": "https://schema.org/",
 	"\@type": "Organization",
-	"url": "@{[ format_subdomain($subdomain) ]}",
+	"url": "$formatted_subdomain",
 	"logo": "/images/misc/$Lang{logo}{$lang}",
 	"name": "$Lang{site_name}{$lc}",
 	"sameAs" : [ "$facebook_page", "https://twitter.com/$twitter_account"]
@@ -5998,6 +6055,7 @@ sub display_field($$) {
 	if (defined $language_fields{$field}) {
 		if ((defined $product_ref->{$field . "_" . $lc}) and ($product_ref->{$field . "_" . $lc} ne '')) {
 			$value = $product_ref->{$field . "_" . $lc};
+			$value =~ s/\n/<br>/g;
 		}
 	}
 
@@ -6012,7 +6070,7 @@ sub display_field($$) {
 	}
 
 
-	if ($value ne '') {
+	if ((defined $value) and ($value ne '')) {
 		if (($field eq 'link') and ($value =~ /^http/)) {
 			my $link = $value;
 			$link =~ s/"|<|>|'//g;
@@ -6235,6 +6293,26 @@ HTML
 		}
 		$html .= "<p>" . lang("barcode") . separator_before_colon($lc) . ": <span property=\"food:code\" itemprop=\"gtin13\" style=\"speak-as:digits;\">$code</span> $html_upc</p>
 <div property=\"gr:hasEAN_UCC-13\" content=\"$code\" datatype=\"xsd:string\"></div>\n";
+	}
+
+
+	# obsolete product
+
+	if ((defined $product_ref->{obsolete}) and ($product_ref->{obsolete} eq 'on')) {
+
+		my $warning = $Lang{obsolete_warning}{$lc};
+		if ((defined $product_ref->{obsolete_since_date}) and ($product_ref->{obsolete_since_date} ne '')) {
+			$warning .= " (" . $Lang{obsolete_since_date}{$lc} . $Lang{sep}{$lc} . ": " . $product_ref->{obsolete_since_date} . ")";
+		}
+
+		$html .= <<HTML
+<div data-alert class="alert-box warn" id="obsolete" style="display: block; background:#ffaa33;color:black;">
+$warning
+</div>
+HTML
+;
+
+
 	}
 
 
@@ -6804,6 +6882,14 @@ $html_fields
 </div>
 HTML
 ;
+	}
+	
+	if ($admin) {
+		compute_carbon_footprint_infocard($product_ref);	
+		$html .= display_field($product_ref, 'environment_infocard');
+		if (defined $product_ref->{"carbon_footprint_from_meat_or_fish_debug"}) {
+			$html .= "<p>debug: " . $product_ref->{"carbon_footprint_from_meat_or_fish_debug"} . "</p>";
+		}
 	}
 
 	# photos and data sources
@@ -7860,6 +7946,7 @@ HTML
 
 		if  (($nutriment !~ /-$/)
 			or ((defined $product_ref->{nutriments}{$nid}) and ($product_ref->{nutriments}{$nid} ne ''))
+			or ((defined $product_ref->{nutriments}{$nid . "_100g"}) and ($product_ref->{nutriments}{$nid . "_100g"} ne ''))
 			or ((defined $product_ref->{nutriments}{$nid . "_prepared"}) and ($product_ref->{nutriments}{$nid . "_prepared"} ne ''))
 			or ($nid eq 'new_0') or ($nid eq 'new_1')) {
 			$shown = 1;
@@ -7970,7 +8057,7 @@ HTML
 				my $percent = $comparison_ref->{nutriments}{"${nid}_100g_%"};
 				if ((defined $percent) and ($percent ne '')) {
 					$percent = $perf->format($percent / 100.0);
-					if ($percent > 0) {
+					if ($percent !~ /^-/) {
 						$percent = "+" . $percent;
 					}
 					$value_unit = '<span class="compare_percent">' . $percent . '</span><span class="compare_value" style="display:none">' . $value_unit . '</span>';
@@ -8116,7 +8203,7 @@ HTML
 					}
 				}
 
-				if ($col eq '100g') {
+				if (($col eq '100g') and (defined $product_ref->{nutriments}{$nid . "_$col"})) {
 					my $property = $nid;
 					$property =~ s/-([a-z])/ucfirst($1)/eg;
 					$property .= "Per100g";
@@ -8181,7 +8268,7 @@ HTML
 
 		if (not $shown) {
 		}
-		elsif ($nid eq 'carbon-footprint') {
+		elsif (($nid eq 'carbon-footprint') or ($nid eq 'carbon-footprint-from-meat-or-fish')) {
 
 			$html2 .= <<HTML
 <tr id="ecological_footprint"><td style="padding-top:10px;font-weight:bold;">$Lang{ecological_data_table}{$lang}</td>$empty_cols</tr>
@@ -8291,6 +8378,9 @@ HTML
 		if (defined $request_ref->{fields}) {
 			my $compact_product_ref = {};
 			foreach my $field (split(/,/, $request_ref->{fields})) {
+				if ($field =~ /^environment_infocard/) {
+					compute_carbon_footprint_infocard($product_ref);
+				}			
 				if (defined $product_ref->{$field}) {
 					$compact_product_ref->{$field} = $product_ref->{$field};
 				}
@@ -8393,7 +8483,7 @@ sub add_images_urls_to_product($) {
 		my @display_ids = ($imagetype . "_" . $display_lc);
 
 		# next try the main language of the product
-		if ($product_ref->{lc} ne $display_lc) {
+		if (defined ($product_ref->{lc}) && $product_ref->{lc} ne $display_lc) {
 			push @display_ids, $imagetype . "_" . $product_ref->{lc};
 		}
 
@@ -8517,8 +8607,7 @@ sub display_structured_response_opensearch_rss {
 
 	$long_name = $xs->escape_value(encode_utf8($long_name));
 	$short_name = $xs->escape_value(encode_utf8($short_name));
-	my $dom = format_subdomain($subdomain);
-	my $query_link = $xs->escape_value(encode_utf8($dom . $request_ref->{current_link_query} . "&rss=1"));
+	my $query_link = $xs->escape_value(encode_utf8($formatted_subdomain . $request_ref->{current_link_query} . "&rss=1"));
 	my $description = $xs->escape_value(encode_utf8(lang("search_description_opensearch")));
 
 	my $search_terms = $xs->escape_value(encode_utf8(decode utf8=>param('search_terms')));
@@ -8539,7 +8628,7 @@ sub display_structured_response_opensearch_rss {
      <opensearch:totalResults>$count</opensearch:totalResults>
      <opensearch:startIndex>$skip</opensearch:startIndex>
      <opensearch:itemsPerPage>${page_size}</opensearch:itemsPerPage>
-     <atom:link rel="search" type="application/opensearchdescription+xml" href="$dom/cgi/opensearch.pl"/>
+     <atom:link rel="search" type="application/opensearchdescription+xml" href="$formatted_subdomain/cgi/opensearch.pl"/>
      <opensearch:Query role="request" searchTerms="${search_terms}" startPage="$page" />
 XML
 ;
@@ -8550,7 +8639,7 @@ XML
 			$item_title = $product_ref->{code} unless $item_title;
 			my $item_description = $xs->escape_value(encode_utf8(sprintf(lang("product_description"), $item_title)));
 			$item_title = $xs->escape_value(encode_utf8($item_title));
-			my $item_link = $xs->escape_value(encode_utf8($dom . product_url($product_ref)));
+			my $item_link = $xs->escape_value(encode_utf8($formatted_subdomain . product_url($product_ref)));
 
 			$xml .= <<XML
      <item>
@@ -8617,30 +8706,16 @@ sub display_recent_changes {
 	$sort_ref->Push('$natural' => -1);
 
 	$log->debug("Executing MongoDB query", { query => $query_ref }) if $log->is_debug();
-	my $cursor = $recent_changes_collection->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
+	my $cursor = get_recent_changes_collection()->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
 	my $count = $cursor->count() + 0;
 	$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 
 	if ($@) {
 		$log->warn("MongoDB error - retrying once", { error => $@ }) if $log->is_warn();
-
-		# opening new connection
-		eval {
-			$connection = MongoDB->connect($mongodb_host);
-			$database = $connection->get_database($mongodb);
-			$recent_changes_collection = $database->get_collection('recent_changes');
-		};
-		if ($@) {
-			$log->error("MongoDB error - reconnecting failed", { error => $@ }) if $log->is_error();
-			$count = -1;
-		}
-		else {
-			$log->info("MongoDB reconnect ok", { error => $@ }) if $log->is_info();
-			$log->debug("Executing MongoDB query", { query => $query_ref }) if $log->is_debug();
-			$cursor = $recent_changes_collection->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
-			$count = $cursor->count() + 0;
-			$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
-		}
+		$log->debug("Executing MongoDB query", { query => $query_ref }) if $log->is_debug();
+		$cursor = get_recent_changes_collection()->query($query_ref)->sort($sort_ref)->limit($limit)->skip($skip);
+		$count = $cursor->count() + 0;
+		$log->info("MongoDB query ok", { error => $@, result_count => $count }) if $log->is_info();
 	}
 
 	my $html .= "<ul>\n";

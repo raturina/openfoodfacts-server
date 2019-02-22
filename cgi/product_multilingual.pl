@@ -232,8 +232,13 @@ HTML
 }
 
 
+	
+	
 my @fields = @ProductOpener::Config::product_fields;
 
+if ($admin) {
+	push @fields, "environment_impact_level";
+}
 
 if (($action eq 'process') and (($type eq 'add') or ($type eq 'edit'))) {
 
@@ -390,6 +395,7 @@ if (($action eq 'process') and (($type eq 'add') or ($type eq 'edit'))) {
 	extract_ingredients_from_text($product_ref);
 	extract_ingredients_classes_from_text($product_ref);
 	detect_allergens_from_text($product_ref);
+	compute_carbon_footprint_from_ingredients($product_ref);
 	
 	# Nutrition data
 	
@@ -404,6 +410,11 @@ if (($action eq 'process') and (($type eq 'add') or ($type eq 'edit'))) {
 	$product_ref->{nutrition_data} = remove_tags_and_quote(decode utf8=>param("nutrition_data"));	
 
 	$product_ref->{nutrition_data_prepared} = remove_tags_and_quote(decode utf8=>param("nutrition_data_prepared"));	
+	
+	if (($admin) and (defined param('obsolete_since_date'))) {
+		$product_ref->{obsolete} = remove_tags_and_quote(decode utf8=>param("obsolete"));
+		$product_ref->{obsolete_since_date} = remove_tags_and_quote(decode utf8=>param("obsolete_since_date"));
+	}
 	
 		
 	defined $product_ref->{nutriments} or $product_ref->{nutriments} = {};
@@ -574,7 +585,7 @@ if (($action eq 'process') and (($type eq 'add') or ($type eq 'edit'))) {
 	compute_nutrient_levels($product_ref);
 	
 	compute_unknown_nutrients($product_ref);
-	
+		
 	ProductOpener::SiteQuality::check_quality($product_ref);
 	
 	$log->trace("end compute_serving_size_date - end") if $log->is_trace();
@@ -597,7 +608,7 @@ sub display_field($$) {
 	my $field = shift;	# can be in %language_fields and suffixed by _[lc]
 	
 	my $fieldtype = $field;
-	my $display_lc = undef;
+	my $display_lc = $lc;
 	
 	if (($field =~ /^(.*?)_(..|new_lc)$/) and (defined $language_fields{$1})) {
 		$fieldtype = $1;
@@ -648,9 +659,22 @@ HTML
 
 	my $html = <<HTML
 <label for="$field">$Lang{$fieldtype}{$lang}</label>
+HTML
+;
+
+	if ($field =~ /infocard/) {	# currently not used
+		$html .= <<HTML
+<textarea name="$field" id="$field" lang="${display_lc}">$value</textarea>
+HTML
+;	
+	}
+	else {
+		$html .= <<HTML
 <input type="text" name="$field" id="$field" class="text${tagsinput}" value="$value" lang="${display_lc}" />		
 HTML
 ;
+	}
+	
 	if (defined $Lang{$fieldtype . "_note"}{$lang}) {
 		$html .= <<HTML
 <p class="note">&rarr; $Lang{$fieldtype . "_note"}{$lang}</p>			
@@ -799,10 +823,29 @@ CSS
 	if ($admin) {
 		$html .= <<HTML
 <label for="new_code" id="label_new_code">${label_new_code}</label>
-<input type="text" name="new_code" id="new_code" class="text" value="" />
+<input type="text" name="new_code" id="new_code" class="text" value="" /><br />
 HTML
 ;
 	}
+	
+	# obsolete products
+	if ($admin) {
+
+		my $checked = '';
+		if ((defined $product_ref->{obsolete}) and ($product_ref->{obsolete} eq 'on')) {
+			$checked = 'checked="checked"';
+		}	
+	
+		$html .= <<HTML
+<input type="checkbox" id="obsolete" name="obsolete" $checked />	
+<label for="obsolete" class="checkbox_label">$Lang{obsolete}{$lang}</label> 
+HTML
+;
+
+		$html .= display_field($product_ref, "obsolete_since_date");
+
+	}
+	
 
 	$html .= <<HTML
 <div data-alert class="alert-box info store-state" id="warning_3rd_party_content" style="display:none;">
@@ -1324,6 +1367,7 @@ HTML
 				elsif ($field eq 'ingredients_text') {
 				
 					my $value = $product_ref->{"ingredients_text_" . ${display_lc}};
+					not defined $value and $value = "";
 					my $id = "ingredients_text_" . ${display_lc};
 				
 					$html_content_tab .= <<HTML
@@ -1404,8 +1448,9 @@ HTML
 
 	$html .= "<div class=\"fieldset\"><legend>$Lang{ingredients}{$lang}</legend>\n";
 
+	my @ingredients_fields = ("ingredients_image", "ingredients_text");
 	
-	$html .= display_tabs($product_ref, $select_add_language, "ingredients_image", $product_ref->{sorted_langs}, \%Langs, ["ingredients_image", "ingredients_text"]);
+	$html .= display_tabs($product_ref, $select_add_language, "ingredients_image", $product_ref->{sorted_langs}, \%Langs, \@ingredients_fields);
 
 
 	# $initjs .= "\$('textarea#ingredients_text').autoResize();";
@@ -1480,8 +1525,8 @@ JS
 		$product_ref->{nutrition_data_prepared} = "";
 	}	
 	
-	my %column_display_style = {};
-	my %nutrition_data_per_display_style = {};
+	my %column_display_style = ();
+	my %nutrition_data_per_display_style = ();
 	
 	# keep existing field ids for the product as sold, and append _prepared_product for the product after it has been prepared
 	foreach my $product_type ("", "_prepared") {
@@ -2059,7 +2104,7 @@ HTML
 
 	$html .= display_product_history($code, $product_ref);
 }
-elsif (($action eq 'display') and ($type eq 'delete')) {
+elsif (($action eq 'display') and ($type eq 'delete') and ($admin)) {
 
 	$log->debug("display product", { code => $code }) if $log->is_debug();
 	
@@ -2089,7 +2134,7 @@ elsif ($action eq 'process') {
 	
 	$product_ref->{interface_version_modified} = $interface_version;
 	
-	if ($type eq 'delete') {
+	if (($admin) and ($type eq 'delete')) {
 		$product_ref->{deleted} = 'on';
 		$comment = lang("deleting_product") . separator_before_colon($lc) . ":";
 	}

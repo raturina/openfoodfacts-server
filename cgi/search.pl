@@ -163,7 +163,7 @@ for (my $i = 0; $i < $nutriments_n ; $i++) {
 
 my $sort_by = remove_tags_and_quote(decode utf8=>param("sort_by"));
 if (($sort_by ne 'created_t') and ($sort_by ne 'last_modified_t') and ($sort_by ne 'last_modified_t_complete_first')
-	and ($sort_by ne 'scans_n') and ($sort_by ne 'unique_scans_n')) {
+	and ($sort_by ne 'scans_n') and ($sort_by ne 'unique_scans_n') and ($sort_by ne 'product_name')) {
 	$sort_by = 'unique_scans_n';
 }
 
@@ -810,20 +810,8 @@ HTML
 	elsif (param("download")) {
 		# CSV export
 		
-		my $csv = search_and_export_products($request_ref, $query_ref, $sort_by, $flatten, \%flatten);
+		search_and_export_products($request_ref, $query_ref, $sort_by, $flatten, \%flatten);
 		
-		if ($csv) {
-			use Apache2::RequestRec ();
-			my $r = Apache2::RequestUtil->request();
-			$r->headers_out->set("Content-type" => "text/csv; charset=UTF-8");
-			$r->headers_out->set("Content-disposition" => "attachment;filename=openfoodfacts_search.csv");
-			binmode(STDOUT, ":encoding(UTF-8)");
-			print "Content-Type: text/csv; charset=UTF-8\r\n\r\n" . $csv ;
-		}
-		else {
-			$request_ref->{title} = lang("search_results");
-			display_new($request_ref);
-		}
 		
 	}
 	else {
