@@ -1,4 +1,4 @@
-﻿# This file is part of Product Opener.
+# This file is part of Product Opener.
 #
 # Product Opener
 # Copyright (C) 2011-2019 Association Open Food Facts
@@ -369,7 +369,6 @@ sub detect_categories ($) {
 
 	(defined $product_ref->{ingredients_text}) and $match_fr .= " " . $product_ref->{ingredients_text};
 	(defined $product_ref->{ingredients_text_fr}) and $match_fr .= "  " . $product_ref->{ingredients_text_fr};
-
 
 	# try to identify baby milks
 
@@ -827,6 +826,9 @@ sub check_code_gs1_prefixes($) {
 	}
 	elsif ($code =~ /^977[0-9]{9,10}$/) {
 		push @{$product_ref->{quality_tags}}, 'gs1-issn-prefix';
+	}
+	elsif ($code =~ /^3600550xxxxxx[0-9]{9,10}$/) {
+		push @{$product_ref->{quality_tags}}, 'cosmetic-product';
 	}
 }
 
