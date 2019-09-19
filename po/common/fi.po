@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fi\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-27 15:11\n"
+"PO-Revision-Date: 2019-09-11 10:31\n"
 "Language-Team: Finnish\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -79,6 +79,7 @@ msgstr "Hei <NAME>,\n\n"
 "https://openfoodfacts.org\n"
 "https://twitter.com/OpenFoodFacts\n"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "Kiitos liittymisestäsi <<site_name>>"
@@ -135,17 +136,20 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "Tuotesivua on muokannut myös"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
-msgstr ""
+msgstr "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "https://world.openfoodfacts.org/files/off.apk"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
-msgstr ""
+msgstr "<img src=\"/images/misc/google-play-badge-svg-master/img/fi_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 
 # Change hl=en to your language, and make sure the url works
 msgctxt "android_app_link"
@@ -629,11 +633,11 @@ msgstr "Yksityiskohtien tarkastelu osaksi tuotteet..."
 
 msgctxt "facebook_locale"
 msgid "en_US"
-msgstr ""
+msgstr "fi_FI"
 
 msgctxt "facebook_page"
 msgid "https://www.facebook.com/OpenFoodFacts"
-msgstr ""
+msgstr "https://www.facebook.com/OpenFoodFacts"
 
 msgctxt "fixme_product"
 msgid "If the data is incomplete or incorrect, you can complete or correct it by editing this page."
@@ -906,10 +910,6 @@ msgstr "Ainekset"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "Ainekset"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "Ainesosien analyysi"
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -2140,8 +2140,8 @@ msgid "Scatter plot"
 msgstr "Pistekaavio"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "<p>→ Opi lisää <<site_name>>:in kaavioista: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Kaaviot kolmella klikkauksella</a> (blogi).</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr ""
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2586,12 +2586,14 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "Sivuston tai blogin osoite"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr ""
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
 msgstr ""
 
 msgctxt "you_are_connected_as_x"
@@ -3009,7 +3011,7 @@ msgstr ""
 
 msgctxt "producer_product_id"
 msgid "Producer product identifier"
-msgstr ""
+msgstr "Tuottajan koodi tuotteelle"
 
 msgctxt "net_weight"
 msgid "Net weight"
@@ -3107,50 +3109,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr "%s:n sivu"
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr "Tuotteet tarkisti %s"
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr "Tuotteita ei ole tarkistanut %s"
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr "Tuotteita korjannut %s"
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr "Tuotteita ei ole korjannut %s"
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr "Tuotteita on muokannut %s"
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr "Tuotteita ei ole muokannut %s"
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr "Tuotteita täyttänyt %s"
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr "Tuotteita, joita ei ole täyttänyt %s"
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr "Tuotteita, jotka on valokuvannut %s"
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr "Tuotteita, joita ei ole valokuvannut %s"
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr "%s:n sivu"
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr "Tuotetta ei enään myydä."
@@ -3186,34 +3144,6 @@ msgstr "Hanki iPad-äppsi"
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
 msgstr "<em>Moniselitteinen viivakoodi</em>: Tällä tuotteella on Restricted Circulation Number -viivakoodi yrityksen sisäiseen käyttöön. Tämä tarkoittaa, että eri tuottajat ja kaupat voivat käyttää samaa viivakoodia eri tuotteille."
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr "Tuottajan koodi tuotteelle"
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "Varoitus"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr "Valmistelu"
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr "Resepti-idea"
-
-msgctxt "origin"
-msgid "Origin"
-msgstr "Alkuperä"
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr "Asiakaspalvelu"
-
-msgctxt "producer"
-msgid "Producer"
-msgstr "Tuottaja"
 
 msgctxt "environment_infocard"
 msgid "Environment infocard"

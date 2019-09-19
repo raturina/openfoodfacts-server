@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt_BR\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-27 15:22\n"
+"PO-Revision-Date: 2019-09-11 10:35\n"
 "Language-Team: Portuguese, Brazilian\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -79,6 +79,7 @@ msgstr "Olá <NAME>,\n\n"
 "https://openfoodfacts.org\n"
 "https://twitter.com/OpenFoodFacts\n"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "Obrigado por aderir << nome_site >>"
@@ -135,14 +136,17 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "Página do produto também editada por"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "https://world.openfoodfacts.org/files/off.apk"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/google-play-badge-svg-master/img/pt_get.svg\" alt=\"Disponível no Google Play\" width=\"102\" height=\"40\" />"
@@ -906,10 +910,6 @@ msgstr "Ingredientes"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "Ingredientes"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "Análise de ingredientes"
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -2143,8 +2143,8 @@ msgid "Scatter plot"
 msgstr "Gráfico de dispersão"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "<p>→ saiba mais sobre os gráficos do <<site_name>>: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Gráficos em 3 cliques</a> (blog).</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr ""
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2589,13 +2589,15 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "Endereço de site ou blog"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/microsoft/Portuguese-Brazilian.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
-msgstr "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
+msgstr "https://www.microsoft.com/pt-br/p/openfoodfacts/9nblggh0dkqr"
 
 msgctxt "you_are_connected_as_x"
 msgid "You are connected as %s."
@@ -3110,50 +3112,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr "Página de %s"
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr "Produtos verificados por %s"
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr "Produtos não verificados por %s"
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr "Produtos corrigidos por %s"
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr "Produtos não corrigidos por %s"
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr "Produtos editados por %s"
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr "Produtos não editados por %s"
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr "Produtos completados por %s"
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr "Produtos não completados por %s"
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr "Produtos fotografados por %s"
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr "Produtos não fotografados por %s"
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr "Página de %s"
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr "O produto não é mais vendido."
@@ -3189,34 +3147,6 @@ msgstr "Obtenha o aplicativo para iPad"
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
 msgstr "<em>Código de barras ambíguo</em>: Este produto tem um código de barras de Número de Circulação Restrito para produtos dentro de uma empresa. Isso significa que diferentes produtores e lojas podem usar o mesmo código de barras para diferentes produtos."
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr "Identificador do produto do produtor"
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "Aviso"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr "Preparação"
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr "Ideia de receita"
-
-msgctxt "origin"
-msgid "Origin"
-msgstr "Origem"
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr "Serviço ao cliente"
-
-msgctxt "producer"
-msgid "Producer"
-msgstr "Produtor"
 
 msgctxt "environment_infocard"
 msgid "Environment infocard"

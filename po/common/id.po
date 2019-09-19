@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: id\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-07 18:40\n"
+"PO-Revision-Date: 2019-09-11 09:41\n"
 "Language-Team: Indonesian\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -65,6 +65,7 @@ msgid "Hello <NAME>,\n\n"
 "https://twitter.com/OpenFoodFacts\n"
 msgstr "Halo <NAME>, Terima kasih banyak telah bergabung dengan https://openfoodfacts.org Inilah nama pengguna Anda: Nama pengguna: <USERID> Anda sekarang dapat masuk ke situs untuk menambahkan dan mengedit produk. <<site_name>> adalah proyek kolaborasi yang dapat Anda hasilkan lebih banyak dari produk baru: energi, antusiasme dan gagasan Anda! Untuk membahas antara kontributor dan membuat proyek maju, kami menggunakan sistem pesan yang sangat mudah digunakan yang disebut Slack: http://slack.openfoodfacts.org Anda juga dapat bergabung dengan grup Facebook untuk kontributor: https://www.facebook.com/ kelompok / 374350705955208 / Baru: kami juga memulai Open Beauty Facts untuk membuat database kosmetik: sabun, pasta gigi, makeup dll https://openbeautyfacts.org Terima kasih banyak! Tim Stéphane dan Tim Pangan Terbuka https://openfoodfacts.org https://twitter.com/OpenFoodFacts"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "Terima kasih telah bergabung dengan <<site_name>>"
@@ -121,14 +122,17 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "Halaman produk juga diedit oleh"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr ""
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "https://world.openfoodfacts.org/files/off.apk"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr ""
@@ -883,10 +887,6 @@ msgstr "bahan"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "bahan"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "Analisis bahan"
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -2102,8 +2102,8 @@ msgid "Scatter plot"
 msgstr "Plot petak"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "<p> → pelajari lebih lanjut tentang <<site_name>> grafik: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graf dalam 3 klik</a> (blog) .</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr ""
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2547,12 +2547,14 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "Alamat situs atau blog"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr ""
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
 msgstr ""
 
 msgctxt "you_are_connected_as_x"
@@ -3068,50 +3070,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr ""
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr ""
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr ""
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr ""
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr ""
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr ""
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr ""
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr ""
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr ""
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr ""
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr ""
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr ""
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr ""
@@ -3146,34 +3104,6 @@ msgstr ""
 
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
-msgstr ""
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr ""
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "bahayaa"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr ""
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr ""
-
-msgctxt "origin"
-msgid "Origin"
-msgstr ""
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr ""
-
-msgctxt "producer"
-msgid "Producer"
 msgstr ""
 
 msgctxt "environment_infocard"

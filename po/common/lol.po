@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: lol\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-07 19:13\n"
+"PO-Revision-Date: 2019-09-11 12:02\n"
 "Language-Team: LOLCAT\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -65,6 +65,7 @@ msgid "Hello <NAME>,\n\n"
 "https://twitter.com/OpenFoodFacts\n"
 msgstr "crwdns102120:0crwdne102120:0"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "crwdns102122:0crwdne102122:0"
@@ -121,14 +122,17 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "crwdns102148:0crwdne102148:0"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr "crwdns121192:0crwdne121192:0"
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "crwdns102152:0crwdne102152:0"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr "crwdns121208:0crwdne121208:0"
@@ -882,10 +886,6 @@ msgstr "crwdns102504:0crwdne102504:0"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "crwdns102506:0crwdne102506:0"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "crwdns102508:0crwdne102508:0"
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -2097,8 +2097,8 @@ msgid "Scatter plot"
 msgstr "crwdns103098:0crwdne103098:0"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "crwdns103100:0crwdne103100:0"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr "crwdns121760:0crwdne121760:0"
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2542,13 +2542,15 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "crwdns103314:0crwdne103314:0"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr "crwdns121212:0crwdne121212:0"
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
-msgstr "crwdns103318:0crwdne103318:0"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
+msgstr "crwdns121752:0crwdne121752:0"
 
 msgctxt "you_are_connected_as_x"
 msgid "You are connected as %s."
@@ -3063,50 +3065,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr "crwdns111900:0%scrwdne111900:0"
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr "crwdns111944:0%scrwdne111944:0"
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr "crwdns111946:0%scrwdne111946:0"
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr "crwdns111948:0%scrwdne111948:0"
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr "crwdns111950:0%scrwdne111950:0"
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr "crwdns111952:0%scrwdne111952:0"
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr "crwdns111954:0%scrwdne111954:0"
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr "crwdns111956:0%scrwdne111956:0"
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr "crwdns111958:0%scrwdne111958:0"
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr "crwdns111960:0%scrwdne111960:0"
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr "crwdns111962:0%scrwdne111962:0"
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr "crwdns111964:0%scrwdne111964:0"
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr "crwdns111968:0crwdne111968:0"
@@ -3142,34 +3100,6 @@ msgstr "crwdns111988:0crwdne111988:0"
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
 msgstr "crwdns116824:0crwdne116824:0"
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr "crwdns116826:0crwdne116826:0"
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "crwdns116828:0crwdne116828:0"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr "crwdns116830:0crwdne116830:0"
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr "crwdns116832:0crwdne116832:0"
-
-msgctxt "origin"
-msgid "Origin"
-msgstr "crwdns116834:0crwdne116834:0"
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr "crwdns116836:0crwdne116836:0"
-
-msgctxt "producer"
-msgid "Producer"
-msgstr "crwdns116838:0crwdne116838:0"
 
 msgctxt "environment_infocard"
 msgid "Environment infocard"
@@ -3285,7 +3215,7 @@ msgstr "crwdns119840:0crwdne119840:0"
 
 msgctxt "ingredients_analysis"
 msgid "Ingredients analysis"
-msgstr "crwdns119842:0crwdne119842:0"
+msgstr "crwdns102508:0crwdne102508:0"
 
 msgctxt "ingredients_analysis_disclaimer"
 msgid "The analysis is based solely on the ingredients listed and does not take into account processing methods."

@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-09 10:21\n"
+"PO-Revision-Date: 2019-09-15 16:02\n"
 "Language-Team: French\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -79,6 +79,7 @@ msgstr "Bonjour <NAME>,\n\n"
 "https://fr.openfoodfacts.org\n"
 "https://twitter.com/OpenFoodFactsFR\n"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "Merci de votre inscription sur <<site_name>>"
@@ -125,24 +126,27 @@ msgstr "Substances ou produits provoquant des allergies ou intolérances"
 
 msgctxt "allergens_p"
 msgid "allergens"
-msgstr "allergenes"
+msgstr "allergènes"
 
 msgctxt "allergens_s"
 msgid "allergen"
-msgstr "allergene"
+msgstr "allergène"
 
 msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "Fiche produit également modifiée par"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"APK Android\" />"
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "https://world.openfoodfacts.org/files/off.apk"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/google-play-badge-svg-master/img/fr_get.svg\" alt=\"Disponible sur Google Play\" width=\"102\" height=\"40\" />"
@@ -253,7 +257,7 @@ msgstr "Les produits de la catégorie %s"
 
 msgctxt "categories_s"
 msgid "category"
-msgstr "categorie"
+msgstr "catégorie"
 
 msgctxt "categories_tagsinput"
 msgid "add a category"
@@ -281,11 +285,11 @@ msgstr "Images téléchargées"
 
 msgctxt "checkers_p"
 msgid "checkers"
-msgstr "verificateurs"
+msgstr "vérificateurs"
 
 msgctxt "checkers_s"
 msgid "checker"
-msgstr "verificateur"
+msgstr "vérificateur"
 
 msgctxt "cities_p"
 msgid "packaging cities"
@@ -473,11 +477,11 @@ msgstr "<p>Les paramètres de votre compte ont bien été modifiés.</p>"
 
 msgctxt "editors_p"
 msgid "editors"
-msgstr "editeurs"
+msgstr "éditeurs"
 
 msgctxt "editors_s"
 msgid "editor"
-msgstr "editeur"
+msgstr "éditeur"
 
 msgctxt "email"
 msgid "e-mail address"
@@ -909,10 +913,6 @@ msgstr "Ingrédients"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "Ingrédients"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "Analyse des ingrédients"
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -2148,8 +2148,8 @@ msgid "Scatter plot"
 msgstr "Graphique sur 2 axes"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "<p>→ en savoir plus sur les graphiques d'<<site_name>> : <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Des graphiques en 3 clics</a> (blog).</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr "<p>→ en savoir plus sur les graphiques d'<<site_name>>: <a href=\"/des-graphiques-en-trois-clics\">graphiques en 3 clics</a> (blog).</p>"
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2595,12 +2595,14 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "Adresse de blog ou de site web"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/microsoft/French.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
 msgstr "https://www.microsoft.com/fr-fr/p/openfoodfacts/9nblggh0dkqr"
 
 msgctxt "you_are_connected_as_x"
@@ -3116,50 +3118,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr "Page de %s"
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr "Produits vérifiés par %s"
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr "Produits qui n'ont pas été vérifiés par %s"
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr "Produits corrigés par %s"
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr "Produits qui n'ont pas été corrigés par %s"
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr "Produits modifiés par %s"
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr "Produits qui n'ont pas été modifiés par %s"
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr "Produits complétés par %s"
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr "Produits qui n'ont pas été complétés par %s"
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr "Produits photographiés par %s"
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr "Produits qui n'ont pas été photographiés par %s"
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr "Page de %s"
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr "Le produit n'est plus en vente."
@@ -3195,34 +3153,6 @@ msgstr "Installez l'app iPad"
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
 msgstr "<em>Code barre ambigu</em> : Ce produit utilise un code barre destiné à l'usage interne d'une entreprise. Il est possible que différents producteurs ou magasins utilisent ce même code barre pour des produits différents."
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr "Identifiant produit du producteur"
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "Avertissement"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr "Préparation"
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr "Idée recette"
-
-msgctxt "origin"
-msgid "Origin"
-msgstr "Origine"
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr "Service consommateur"
-
-msgctxt "producer"
-msgid "Producer"
-msgstr "Producteur"
 
 msgctxt "environment_infocard"
 msgid "Environment infocard"

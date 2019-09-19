@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-29 13:14\n"
+"PO-Revision-Date: 2019-09-15 12:42\n"
 "Language-Team: Russian\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -78,6 +78,7 @@ msgstr "Привет, <NAME>!\n\n"
 "https://openfoodfacts.org\n"
 "https://twitter.com/OpenFoodFacts\n"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "Спасибо, что присоединились к <<site_name>>"
@@ -134,14 +135,17 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "Страницу продукта также редактировали:"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "https://world.openfoodfacts.org/files/off.apk"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/google-play-badge-svg-master/img/ru_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
@@ -868,7 +872,7 @@ msgstr "Полный размер"
 
 msgctxt "image_attribution_creativecommons"
 msgid "This file was uploaded to product %s and is licensed under the %s license."
-msgstr ""
+msgstr "Этот файл был загружен в продукт %s и лицензирован под лицензией %s."
 
 msgctxt "image_attribution_photographer"
 msgid "Attribution: Photo by %s per %s"
@@ -876,7 +880,7 @@ msgstr ""
 
 msgctxt "image_attribution_photographer_editor"
 msgid "Attribution: Photo by %s with additional modifications by %s per %s"
-msgstr ""
+msgstr "Атрибутация: Фото %s с дополнительными изменениями %s на %s"
 
 msgctxt "image_original_link_text"
 msgid "(Original Image)"
@@ -884,7 +888,7 @@ msgstr "(Исходное изображение)"
 
 msgctxt "image_attribution_link_title"
 msgid "Photo detail and attribution information"
-msgstr ""
+msgstr "Детали фото и информация о атрибуции"
 
 msgctxt "incomplete_products_you_added"
 msgid "Products you added that need to be completed"
@@ -905,10 +909,6 @@ msgstr "Ингредиенты"
 msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "Ингредиенты"
-
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "Анализ ингредиентов"
 
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
@@ -2143,8 +2143,8 @@ msgid "Scatter plot"
 msgstr "Точечная диаграмма"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "<p>→ узнайте больше о графиках <<site_name>>: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Графики в 3 клика</a> (блог).</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr ""
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2590,12 +2590,14 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "Адрес сайта или блога"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/microsoft/Russian.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
 msgstr "https://www.microsoft.com/ru-ru/p/openfoodfacts/9nblggh0dkqr"
 
 msgctxt "you_are_connected_as_x"
@@ -3111,50 +3113,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr "Страница %s "
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr "Продукты проверены %s"
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr "Продукты не проверены %s"
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr "Продукты исправлены %s"
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr "Продукты не исправлены %s"
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr "Продукты отредактированы %s"
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr "Продукты не отредактированы %s"
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr "Продукты заполнены %s"
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr "Продукты не заполнены %s"
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr "Продуктов сфотографированных %s"
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr "Продуктов не сфотографированно %s"
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr "Страница %s "
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr "Товар больше не продается."
@@ -3190,34 +3148,6 @@ msgstr "Скачать приложение для iPad"
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
 msgstr "<em>Неоднозначный штрих-код</em>: Этот продукт имеет штрих-код с ограниченным обращением для продуктов внутри компании. Это означает, что разные производители и магазины могут использовать один и тот же штрих-код для разных продуктов."
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr "Идентификатор производителя продукта"
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "Предупреждение"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr "Подготовка"
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr "Идея рецепта"
-
-msgctxt "origin"
-msgid "Origin"
-msgstr "Происхождение"
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr "Обслуживание клиентов"
-
-msgctxt "producer"
-msgid "Producer"
-msgstr "Изготовитель"
 
 msgctxt "environment_infocard"
 msgid "Environment infocard"
@@ -3345,7 +3275,7 @@ msgstr "Вы просматриваете старую версию страни
 
 msgctxt "rev_number"
 msgid "Revision number: "
-msgstr ""
+msgstr "Номер версии: "
 
 msgctxt "rev_contributor"
 msgid "Edited by: "

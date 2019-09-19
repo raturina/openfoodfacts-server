@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: nl\n"
 "Project-Id-Version: openfoodfacts\n"
-"PO-Revision-Date: 2019-08-29 13:14\n"
+"PO-Revision-Date: 2019-09-11 09:36\n"
 "Language-Team: Dutch\n"
 "Last-Translator: Pierre Slamich (pierreslamich)\n"
 "POT-Creation-Date: \n"
@@ -79,6 +79,7 @@ msgstr "Hallo <NAME>,\n\n"
 "https://openfoodfacts.org\n"
 "https://twitter.com/OpenFoodFacts\n"
 
+# please check that site_name and the brackets stays intact
 msgctxt "add_user_email_subject"
 msgid "Thanks for joining <<site_name>>"
 msgstr "Bedankt voor uw inschrijving op <<site_name>>"
@@ -135,14 +136,17 @@ msgctxt "also_edited_by"
 msgid "Product page also edited by"
 msgstr "Productpagina ook bewerkt door"
 
+# Please check that the HTML tag stayed intact
 msgctxt "android_apk_app_badge"
 msgid "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 msgstr "<img src=\"/images/misc/android-apk.svg\" loading=\"lazy\" alt=\"Android APK\" />"
 
+# DO NOT TRANSLATE
 msgctxt "android_apk_app_link"
 msgid "https://world.openfoodfacts.org/files/off.apk"
 msgstr "https://world.openfoodfacts.org/files/off.apk"
 
+# Please change en_get.svg to fr_get.svg. check the url https://static.openfoodfacts.org/images/misc/google-play-badge-svg-master/img/XX_get.svg
 msgctxt "android_app_badge"
 msgid "<img src=\"/images/misc/google-play-badge-svg-master/img/en_get.svg\" alt=\"Available on Google Play\" width=\"102\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/google-play-badge-svg-master/img/nl_get.svg\" alt=\"Beschikbaar in Google Play\" width=\"102\" height=\"40\" />"
@@ -907,10 +911,6 @@ msgctxt "ingredients_alt"
 msgid "Ingredients"
 msgstr "Ingrediënten"
 
-msgctxt "ingredients_analysis"
-msgid "Ingredients analysis"
-msgstr "ingrediënten_analyse"
-
 msgctxt "ingredients_analysis_note"
 msgid "Note: ingredients can be listed with many different names, please let us know if you think the analysis above is incorrect."
 msgstr "Opmerking: ingrediënten kunnen onder veel verschillende namen zijn opgenomen. Laat het ons weten als u denkt dat de bovenstaande analyse onjuist is."
@@ -1501,11 +1501,11 @@ msgstr "Producten zonder de voedingsstof %s"
 
 msgctxt "nutrition_alt"
 msgid "Nutrition facts"
-msgstr "Voedigswaarden"
+msgstr "Voedingswaarden"
 
 msgctxt "nutrition_data"
 msgid "Nutrition facts"
-msgstr "Voedigswaarden"
+msgstr "Voedingswaarden"
 
 msgctxt "nutrition_data_average"
 msgid "Average nutrition facts for the %d products of the %s category for which nutrition facts are known (out of %d products)."
@@ -1577,7 +1577,7 @@ msgstr "Standaardafwijking"
 
 msgctxt "nutrition_data_table"
 msgid "Nutrition facts"
-msgstr "Voedigswaarden"
+msgstr "Voedingswaarden"
 
 msgctxt "nutrition_data_table_note"
 msgid "The table lists by default nutriments that are often specified. Leave the field blank if it's not on the label.<br/>You can add extra nutriments (vitamins, minerals, cholesterol etc.)\n"
@@ -2142,8 +2142,8 @@ msgid "Scatter plot"
 msgstr "Grafiek met 2 assen"
 
 msgctxt "search_graph_blog"
-msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Graphs in 3 clicks</a> (blog).</p>"
-msgstr "<p>→ meer weten over de grafieken van <<site_name>>: <a href=\"https://fr.blog.openfoodfacts.org/news/des-graphiques-en-3-clics\">Grafieken in drie muisklikken</a> (blog).</p>"
+msgid "<p>→ learn more about <<site_name>> graphs: <a href=\"/graphs-in-3-clicks\">Graphs in 3 clicks</a> (blog).</p>"
+msgstr ""
 
 msgctxt "search_graph_choice"
 msgid "Results on a graph"
@@ -2587,12 +2587,14 @@ msgctxt "website"
 msgid "Site or blog address"
 msgstr "Adres van website of blog"
 
+# Please change English.svg to French.svg or German.svg… Check the url https://static.openfoodfacts.org/images/misc/microsoft/XXXX.svg
 msgctxt "windows_phone_app_badge"
 msgid "<img src=\"/images/misc/microsoft/English.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 msgstr "<img src=\"/images/misc/microsoft/Dutch.svg\" alt=\"Windows Phone Store\" width=\"109\" height=\"40\" />"
 
+# Please change en-us to fr-fr, pt-br or de-ch…Check the URL !
 msgctxt "windows_phone_app_link"
-msgid "https://www.microsoft.com/p/openfoodfacts/9nblggh0dkqr"
+msgid "https://www.microsoft.com/en-us/p/openfoodfacts/9nblggh0dkqr"
 msgstr "https://www.microsoft.com/nl-nl/p/openfoodfacts/9nblggh0dkqr"
 
 msgctxt "you_are_connected_as_x"
@@ -3108,50 +3110,6 @@ msgctxt "user_s_page"
 msgid "%s's page"
 msgstr "%s's pagina"
 
-msgctxt "checkers_products"
-msgid "Products checked by %s"
-msgstr "Producten gecontroleerd door %s"
-
-msgctxt "checkers_without_products"
-msgid "Products not checked by %s"
-msgstr "Producten niet gecontroleerd door %s"
-
-msgctxt "correctors_products"
-msgid "Products corrected by %s"
-msgstr "Producten gecorrigeerd door %s"
-
-msgctxt "correctors_without_products"
-msgid "Products not corrected by %s"
-msgstr "Producten niet gecorrigeerd door %s"
-
-msgctxt "editors_products"
-msgid "Products edited by %s"
-msgstr "Producten bewerkt door %s"
-
-msgctxt "editors_without_products"
-msgid "Products not edited by %s"
-msgstr "Producten niet bewerkt door %s"
-
-msgctxt "informers_products"
-msgid "Products completed by %s"
-msgstr "Producten voltooid door %s"
-
-msgctxt "informers_without_products"
-msgid "Products not completed by %s"
-msgstr "Producten niet voltooid door %s"
-
-msgctxt "photographers_products"
-msgid "Products photographed by %s"
-msgstr "Producten gefotografeerd door %s"
-
-msgctxt "photographers_without_products"
-msgid "Products not photographed by %s"
-msgstr "Producten niet gefotografeerd door %s"
-
-msgctxt "user_s_page"
-msgid "%s's page"
-msgstr "%s's pagina"
-
 msgctxt "obsolete"
 msgid "The product is no longer sold."
 msgstr "Het product wordt niet langer verkocht."
@@ -3187,34 +3145,6 @@ msgstr "Download de iPad-app"
 msgctxt "warning_gs1_company_prefix"
 msgid "<em>Ambiguous barcode</em>: This product has a Restricted Circulation Number barcode for products within a company. This means that different producers and stores can use the same barcode for different products."
 msgstr "<em>Meervoudige streepjescode</em>: dit product heeft een streepjescode met een beperkte circulatie voor producten binnen een bedrijf. Dit betekent dat verschillende producenten en winkels dezelfde barcode kunnen gebruiken voor verschillende producten."
-
-msgctxt "producer_product_id"
-msgid "Producer product identifier"
-msgstr "Productidentificatie Producent"
-
-msgctxt "warning"
-msgid "Warning"
-msgstr "Let op"
-
-msgctxt "preparation"
-msgid "Preparation"
-msgstr "Bereidingswijze"
-
-msgctxt "recipe_idea"
-msgid "Recipe idea"
-msgstr "Recept idee"
-
-msgctxt "origin"
-msgid "Origin"
-msgstr "Herkomst"
-
-msgctxt "customer_service"
-msgid "Customer service"
-msgstr "Klantenservice"
-
-msgctxt "producer"
-msgid "Producer"
-msgstr "Producent"
 
 msgctxt "environment_infocard"
 msgid "Environment infocard"
